@@ -21,3 +21,29 @@ export const stripeRouter = createRouter()
       return await getProducts()
     }
   })
+  .query('create-checkout', {
+    async resolve({ ctx }) {
+
+    }
+  })
+
+export const sendgridRouter = createRouter()
+  .query('send-email', {
+    async resolve({ ctx }) {
+
+      const msg = {
+        to: '',
+        from: process.env.EMAIL!,
+        subject: 'Please verify your new kleanse online shopping account',
+        text: ''
+      }
+      ctx.sendgrid
+        .send(msg)
+        .then(() => {
+          console.log('Email sent')
+        })
+        .catch((error: string) => {
+          console.log(error)
+        })
+    }
+  })
