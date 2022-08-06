@@ -3,6 +3,7 @@ import * as trpc from "@trpc/server";
 import * as trpcNext from "@trpc/server/adapters/next";
 import { mongo } from '../db/mongo';
 import { stripe } from "../api's/stripe"
+import { sendgrid } from "../api's/sendgrid"
 
 
 export const createContext = (opts?: trpcNext.CreateNextContextOptions) => {
@@ -13,7 +14,8 @@ export const createContext = (opts?: trpcNext.CreateNextContextOptions) => {
     req,
     res,
     mongo,
-    stripe
+    stripe,
+    sendgrid
   };
 };
 
