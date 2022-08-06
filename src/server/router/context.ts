@@ -5,7 +5,6 @@ import { mongo } from '../db/mongo';
 import { stripe } from "../api's/stripe"
 import { sendgrid } from "../api's/sendgrid"
 
-
 export const createContext = (opts?: trpcNext.CreateNextContextOptions) => {
   const req = opts?.req;
   const res = opts?.res;
