@@ -1,20 +1,18 @@
 import type { GetStaticProps, NextPage } from "next";
-import Head from "next/head";
 import Image from "next/image";
 import { FC, useEffect, useState } from "react";
 import Layout from "../components/layout";
 import { useIncrementData } from "../hooks/useIntervals";
+import { cards, images } from "../utils/siteInfo";
 import { inferQueryOutput } from "../utils/trpc";
-import Products from "./products";
 
-interface HomeProps { stripe: inferQueryOutput<'stripe.all-products'> }
+interface HomeProps { products: inferQueryOutput<'stripe.all-products'> }
 interface MainProps { mobile: boolean, bool: boolean }
-interface ShopItems { }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const database = await fetch('http://localhost:3000/api/getStripeItems');
-  const stripe = await database.json();
-  return { props: { stripe } }
+  const req = await fetch('http://localhost:3000/api/stripe');
+  const products = await req.json();
+  return { props: { products } }
 }
 
 const Home: NextPage<HomeProps> = (props) => {
@@ -25,6 +23,7 @@ const Home: NextPage<HomeProps> = (props) => {
   return (
     <Layout>
       <>
+
         <div className='' >
           <header className=''>
             <h5 className='' onClick={e => console.log(props)}>Memberships Available!</h5>
@@ -33,7 +32,6 @@ const Home: NextPage<HomeProps> = (props) => {
           <ImageCards />
           <button onClick={e => window.scrollTo(0, 0)} > ^ </button>
         </div>
-        <Products stripe={props.stripe} />
       </>
     </Layout>
 
@@ -49,29 +47,11 @@ export const Main: FC<MainProps> = (props): JSX.Element => {
   const [count, setCount, setIncrement] = useIncrementData();
   const [hover, setHover] = useState<boolean>(false);
 
-  const images = [{
-    title: 'KLEANSE  X  HYGIENE',
-    paragraph: "",
-    image: '',
-    active: [true, false, false]
-  },
-  {
-    title: 'KLEANSE AND COFFEE',
-    paragraph: '',
-    image: '',
-    active: [false, true, false]
-  },
-  {
-    title: 'KLEANSE  REWARDS',
-    paragraph: '',
-    image: '',
-    active: [false, false, true]
-  }
-  ]
+
   useEffect(() => {
     if (hover) return;
     const interval = setInterval(() => {
-      setIncrement(2, 'image-slider', true);
+      setIncrement(2, 'image', true);
 
     }, 5000)
     return () => clearInterval(interval);
@@ -79,10 +59,10 @@ export const Main: FC<MainProps> = (props): JSX.Element => {
 
   return (
     <>
-      <div className='' onMouseOver={e => setHover(false)} style={{ position: 'fixed', height: '100vh', width: '100vw', top: '0', zIndex: '0', }} />
+      <div className='' onMouseOver={e => setHover(false)} style={{ position: 'fixed', height: '100vh', width: '100vw', top: '0', zIndex: '-1', background: 'rgba(0,0,0,0.1)' }} />
       <div className='' onMouseEnter={e => setHover(true)} style={{ padding: '2rem 0rem', background: 'gray', zIndex: '1' }}>
-        <h1>{images[count['image-slider']]?.title}</h1>
-        <Image src={`${images[count['image-slider']]?.image}`} width={1000} height={500} />
+        <h1>{images[count['image']]?.title}</h1>
+        <Image src={`${images[count['image']]?.image}`} width={2000} height={700} />
       </div>
 
     </>
@@ -94,26 +74,6 @@ export const ImageCards: FC<ImageCards> = (props): JSX.Element => {
 
   const [hover, setHover] = useState<boolean>()
 
-  const cards = [{
-    title: "TRENDING",
-    hovertext: 'VIEW PRODUCTS',
-    paragraph: '',
-    image: '',
-    about: ''
-  }, {
-    title: 'NEW ARRIVALS',
-    hovertext: 'VIEW PRODUCTS',
-    paragraph: '',
-    image: '',
-    about: ''
-  }, {
-    title: 'MORE COMING SOON...',
-    hovertext: 'More items coming soon',
-    paragraph: '',
-    image: '',
-    about: ''
-  }]
-
   return (
     <>
       {cards.map((info) => {
@@ -123,7 +83,7 @@ export const ImageCards: FC<ImageCards> = (props): JSX.Element => {
             <div className='' onMouseEnter={e => { e.preventDefault(); setHover(true) }}>
               <h3 className=''>{info.title}</h3>
               <p className=''>{info.paragraph}</p>
-              <Image src={info.image} width={200} height={100} />
+              <Image src={info.image} width={600} height={320} />
 
             </div>
           </>
