@@ -1,18 +1,25 @@
 import Head from "next/head";
 import Link from "next/link";
-import { FC } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
+import { Login } from "./auth";
+import { Cart } from "./cart";
 
 interface LayoutProps { children: JSX.Element; }
-interface HeaderProps { }
+interface HeaderProps { onOpenSidebar: (e: any) => void, sidebar: boolean }
+interface SidemenuProps { }
 interface FooterProps { }
 
 const Layout: FC<LayoutProps> = ({ children }): JSX.Element => {
+
+    const [open, setOpen] = useState(false);
+
     return (
         <>
             <Head>
                 <title>kleanse</title>
             </Head>
-            <Header />
+            {open && <Sidemenu />}
+            <Header onOpenSidebar={e => { setOpen(e) }} sidebar={open} />
             {children}
             <Footer />
         </>
@@ -21,10 +28,12 @@ const Layout: FC<LayoutProps> = ({ children }): JSX.Element => {
 
 export default Layout;
 
-export const Header: FC<HeaderProps> = ({ }): JSX.Element => {
+export const Header: FC<HeaderProps> = ({ onOpenSidebar, sidebar }): JSX.Element => {
 
-    // if (cartItems === undefined) return
-    // if (!mobile) {
+    const callback = useCallback(() => {
+        onOpenSidebar(!sidebar);
+    }, [sidebar, onOpenSidebar])
+
     return (
         <>
             <header className='' style={{ zIndex: '10', display: 'fixed' }} >
@@ -34,12 +43,12 @@ export const Header: FC<HeaderProps> = ({ }): JSX.Element => {
                 </span>
                 <div className=''>
                     <Link href='/'><a>HOME</a></Link>
-                    <Link href='/products'><a>PRODUCTS</a></Link>
+                    <Link href='/all-products'><a>PRODUCTS</a></Link>
                     <Link href=''><a>CONTACT</a></Link>
                     <Link href=''><a>ABOUT</a></Link>
                 </div>
                 <span className='header-button-container'>
-                    <button>CART</button>
+                    <button onClick={callback}>CART</button>
                 </span>
                 {/* {cartItems.length > 0 && <div className='cart-notifier'></div>} */}
             </header>
@@ -78,5 +87,14 @@ export const Footer: FC<FooterProps> = (): JSX.Element => {
     );
 }
 
+export const Sidemenu: FC<SidemenuProps> = ({ }): JSX.Element => {
+    return (
+        <div className=''>
+            <Login />
+            <Link href={'/'}><a>Don't have an account? Sign up here</a></Link>
+            <Cart />
+        </div>
+    )
+}
 
 
