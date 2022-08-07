@@ -1,6 +1,6 @@
 import { JSONObject } from "superjson/dist/types";
 
-export const sendData = async (target: string, value: JSONObject) => {
+export const sendData = async (target: string, value: object) => {
 
     const res = await fetch(`http://localhost:3000/api/${target}`, {
         method: 'post',

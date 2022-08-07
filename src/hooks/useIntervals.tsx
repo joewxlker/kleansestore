@@ -15,14 +15,8 @@ const useSetCount = () => {
 
 export const useIncrementData = () => {
 
-    interface Increment<value> {
-        [target: string]: value
-    }
-
     const [count, setCount] = useSetCount();
     return [count, setCount, (greater: number, target: 'image', operator: boolean) => {
-        //return count/setCount here, no need to import useSetCount outside of useIncrementData
-        console.log(greater, target, count, setCount)
 
         if (operator && count[target] < greater) return setCount(target, (count[target] + 1));
         if (operator && count[target] >= greater) return setCount(target, (count[target] - count[target]));
