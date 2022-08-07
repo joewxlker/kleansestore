@@ -1,16 +1,15 @@
 import { useState } from "react";
 
 interface FormObj {
-  firstname?: '';
-  lastname?: '';
-  email?: '',
-  pass?: '',
-  word?: '',
-  hidden?: '',
-  message?: '',
-  day?: '',
-  month?: '',
-  year?: ''
+  firstname?: string | undefined;
+  lastname?: string | undefined;
+  email?: string | undefined,
+  password?: string | undefined,
+  hidden?: string | undefined,
+  message?: string | undefined,
+  day?: number | undefined,
+  month?: number | undefined,
+  year?: number | undefined
 }
 
 export const formObj: FormObj = {}
@@ -20,6 +19,7 @@ const useSetForm = () => {
   return [value, (event: React.ChangeEvent<HTMLInputElement>) => {
     setForm((oldValue) => {
       return { ...oldValue, [event.target.name]: event.target.value };
+      // sets form state based on input value without mutating state
     });
   },
   ] as const;
