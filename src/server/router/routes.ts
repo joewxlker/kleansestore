@@ -1,11 +1,20 @@
 import { createRouter } from "./context";
 
 export const mongoDbRouter = createRouter()
-  .query('allUsers', {
+  .query('login', {
     async resolve({ ctx }) {
-      console.log('mongo')
       await ctx.mongo.connect();
-      return await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: 'joewxlk3r@gmail.com' })
+
+      try {
+        const login = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: '' });
+        if (login === undefined) return null
+        return true
+      }
+
+      catch (err) {
+        console.log(err);
+        return false
+      }
     }
   })
 
