@@ -1,8 +1,7 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
-import { FC, useCallback, useEffect, useState } from "react";
-import { Cart } from "./cart";
+import { FC, useCallback, useState } from "react";
 import { Form } from "./form";
 
 interface LayoutProps { children: JSX.Element; }
@@ -83,19 +82,26 @@ export const Footer: FC<FooterProps> = (): JSX.Element => {
 
 export const Sidemenu: FC<SidemenuProps> = ({ }): JSX.Element => {
 
+    const [errer, setError] = useState<string | null>(null);
     const { data: session } = useSession()
 
-    if (session) return (
-        <button onClick={() => signOut()}>Sign out</button>
+    if (session) {
+        return (
+            <>
+                <button onClick={e => signOut()}>Log out</button>
 
+            </>
+        )
+    } return (
+        <>
+            <div className=''>
+                <Form type={['email', 'password', 'hidden']} target={'mongo.login'} buttons={[]} onResponse={e => signIn()} />
+                {errer !== null && <h1>{errer}</h1>}
+                <Link href={'/signup'}><a>Don't have an account? Sign up here</a></Link>
+            </div>
+        </>
     )
-    return (
-        <div className=''>
-            <Form type={['email', 'pass', 'hidden']} target={'login'} buttons={[]} onResponse={(data) => { if (data) { signIn() } }} />
-            <Link href={'/signup'}><a>Don't have an account? Sign up here</a></Link>
-            <Cart />
-        </div>
-    )
+
 }
 
 

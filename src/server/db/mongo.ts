@@ -8,3 +8,6 @@ declare global {
 }
 
 export const mongo: mongoDB.MongoClient = new MongoClient(uri);
+export const clientPromise = mongo.connect()
+
+// declares mongo globals

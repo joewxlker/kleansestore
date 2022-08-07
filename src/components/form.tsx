@@ -1,14 +1,15 @@
-import { ChangeEvent, FC, FormEvent, useCallback, useState } from "react";
+import { FC, FormEvent, useCallback, useState } from "react";
 import useSetForm from "../hooks/SetForm";
-import { sendData } from "../utils/sendData";
+import { client } from "../pages/_app";
 import { dateData } from "../utils/siteInfo";
+import { inferMutationOutput } from "../utils/trpc";
 
 interface ButtonProps { buttons: Array<'day' | 'month' | 'year'>; }
-interface LoginProps { onResponse: (data: boolean) => void }
+interface LoginProps { onResponse: (data?: inferMutationOutput<'mongo.login' | 'mongo.sign-up'>) => void }
 
 interface FormProps extends ButtonProps, LoginProps {
-    type: Array<'firstname' | 'lastname' | 'email' | 'pass' | 'word' | 'hidden' | 'message' | 'day' | 'month' | 'year'>;
-    target: string;
+    type: Array<'firstname' | 'lastname' | 'email' | 'password' | 'hidden' | 'message' | 'day' | 'month' | 'year'>;
+    target: `mongo.${'sign-up' | 'login'}` | `sendgrid.send-email`;
 };
 
 export const Form: FC<FormProps> = ({ type, target, buttons, onResponse }): JSX.Element => {
@@ -17,9 +18,9 @@ export const Form: FC<FormProps> = ({ type, target, buttons, onResponse }): JSX.
     const [period, setPeriod] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
 
-    const handleCallback = useCallback((data: boolean) => {
+    const handleCallback = useCallback((data: inferMutationOutput<'mongo.login' | 'mongo.sign-up'>) => {
         onResponse(data)
-    }, [])
+    }, [onResponse])
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -27,11 +28,11 @@ export const Form: FC<FormProps> = ({ type, target, buttons, onResponse }): JSX.
 
         const emptyCheck = Object.values(form).map(e => { return e === '' });
         const filtered = emptyCheck.filter((x) => x === true);
-
         if (((type.length - 1) + buttons.length) != Object.entries(form).length || filtered[0] === true)
             return setLoading(false);
 
-        sendData(target, form,).then((data) => { handleCallback(data); setLoading(false) })
+        const res: any = await client.mutation(target, form);
+        handleCallback(res)
     }
 
     return (
@@ -48,22 +49,23 @@ export const Form: FC<FormProps> = ({ type, target, buttons, onResponse }): JSX.
                                 placeholder={types}
                                 onChange={setForm} />)
                     })}
-                    {target === 'sign-up' ? (
+                    {target === 'mongo.sign-up' ? (
                         <>
                             {buttons.map((day) =>
                                 <button
+                                    key={day}
                                     value={form[day]}
                                     name={day}
                                     onClick={e => setPeriod(day)}>
                                     {form[day] != undefined ? form[day] : day}
                                 </button>)}</>) : <></>}
-                    <button type='submit' disabled={loading}> Submit </button>
+                    <button type='submit' disabled={false}> Submit </button>
 
                 </>
             </form>
             {buttons.map((date) => {
                 return (
-                    <ul>{dateData[date].map((day) => {
+                    <ul key={date}>{dateData[date].map((day) => {
                         return (
                             <>
                                 {period === date &&
