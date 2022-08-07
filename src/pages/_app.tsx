@@ -4,9 +4,10 @@ import type { AppRouter } from "../server/router";
 import type { AppType } from "next/dist/shared/lib/utils";
 import superjson from "superjson";
 import "../styles/globals.css";
+import { SessionProvider } from "next-auth/react"
 
-const MyApp: AppType = ({ Component, pageProps }) => {
-  return <Component {...pageProps} />;
+const MyApp: AppType = ({ Component, pageProps: { session, ...pageProps } }) => {
+  return <SessionProvider session={session}>      <Component {...pageProps} />    </SessionProvider>
 };
 
 const getBaseUrl = () => {
@@ -41,3 +42,5 @@ export default withTRPC<AppRouter>({
    */
   ssr: false,
 })(MyApp);
+
+
