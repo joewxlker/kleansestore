@@ -1,8 +1,9 @@
+import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { FC, useCallback, useEffect, useState } from "react";
-import { Login } from "./auth";
 import { Cart } from "./cart";
+import { Form } from "./form";
 
 interface LayoutProps { children: JSX.Element; }
 interface HeaderProps { onOpenSidebar: (e: any) => void, sidebar: boolean }
@@ -44,8 +45,8 @@ export const Header: FC<HeaderProps> = ({ onOpenSidebar, sidebar }): JSX.Element
                 <div className=''>
                     <Link href='/'><a>HOME</a></Link>
                     <Link href='/all-products'><a>PRODUCTS</a></Link>
-                    <Link href=''><a>CONTACT</a></Link>
-                    <Link href=''><a>ABOUT</a></Link>
+                    <Link href='/contact'><a>CONTACT</a></Link>
+                    <Link href='/about'><a>ABOUT</a></Link>
                 </div>
                 <span className='header-button-container'>
                     <button onClick={callback}>CART</button>
@@ -55,13 +56,6 @@ export const Header: FC<HeaderProps> = ({ onOpenSidebar, sidebar }): JSX.Element
 
         </>
     )
-    // } else {
-    // return (
-    //     <header className={`header-container-true`} >
-    //         {/* {cartItems.length > 0 && <div className='cart-notifier'></div>} */}
-    //     </header>
-    // )
-    // }
 }
 
 export const Footer: FC<FooterProps> = (): JSX.Element => {
@@ -88,10 +82,17 @@ export const Footer: FC<FooterProps> = (): JSX.Element => {
 }
 
 export const Sidemenu: FC<SidemenuProps> = ({ }): JSX.Element => {
+
+    const { data: session } = useSession()
+
+    if (session) return (
+        <button onClick={() => signOut()}>Sign out</button>
+
+    )
     return (
         <div className=''>
-            <Login />
-            <Link href={'/'}><a>Don't have an account? Sign up here</a></Link>
+            <Form type={['email', 'pass', 'hidden']} target={'login'} buttons={[]} onResponse={(data) => { if (data) { signIn() } }} />
+            <Link href={'/signup'}><a>Don't have an account? Sign up here</a></Link>
             <Cart />
         </div>
     )
