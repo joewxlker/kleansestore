@@ -54,7 +54,7 @@ export const Main: FC<MainProps> = (): JSX.Element => {
       // 2 = limit, 'target varible = image', true = increment
     }, 5000)
     return () => clearInterval(interval);
-  }, [count, setCount, hover])
+  }, [count, setCount, hover, setIncrement])
   /** iterates imageslider data, see definition @module src/utils/siteInfo.ts  */
 
   return (
@@ -62,7 +62,7 @@ export const Main: FC<MainProps> = (): JSX.Element => {
       <div className='' onMouseOver={e => setHover(false)} style={{ position: 'fixed', height: '100vh', width: '100vw', top: '0', zIndex: '-1', background: 'rgba(0,0,0,0.1)' }} />
       <div className='' onMouseEnter={e => setHover(true)} style={{ padding: '2rem 0rem', background: 'gray', zIndex: '1' }}>
         <h1>{images[count['image']]?.title}</h1>
-        <Image src={`${images[count['image']]?.image}`} width={2000} height={700} />
+        <Image src={`${images[count['image']]?.image}`} width={2000} height={700} alt={``} />
       </div>
 
     </>
@@ -85,7 +85,7 @@ export const ImageCards: FC<ImageCards> = (props): JSX.Element => {
             <div className='' onMouseEnter={e => { e.preventDefault(); setHover(true) }}>
               <h3 className=''>{info.title}</h3>
               <p className=''>{info.paragraph}</p>
-              <Image src={info.image} width={600} height={320} />
+              <Image src={info.image} width={600} height={320} alt={''} />
 
             </div>
           </>
