@@ -3,9 +3,6 @@ import Layout from "../components/layout";
 
 const About: NextPage = () => {
 
-    const bool = false;
-    const mobile = false;
-
     return (
         <Layout>
             <>
