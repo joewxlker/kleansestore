@@ -7,28 +7,26 @@ import { cards, images } from "../utils/siteInfo";
 import { inferQueryOutput } from "../utils/trpc";
 
 interface HomeProps { products: inferQueryOutput<'stripe.all-products'> }
-interface MainProps { mobile: boolean, bool: boolean }
+/** infer query output infers typing based on routes defined {@module src/server/router/routes.ts} */
 
 export const getStaticProps: GetStaticProps = async () => {
-  const req = await fetch('http://localhost:3000/api/stripe');
+  const req = await fetch('http://localhost:3000/api/trpc/stripe.all-products');
+  //TODO convert to useMutation
   const products = await req.json();
   return { props: { products } }
+  // populates website with static stripe product data
 }
 
 const Home: NextPage<HomeProps> = (props) => {
 
-  const bool = false;
-  const mobile = false;
-
   return (
     <Layout>
       <>
-
         <div className='' >
           <header className=''>
-            <h5 className='' onClick={e => console.log(props)}>Memberships Available!</h5>
+            <h5 className='' onClick={e => ''}>Memberships Available!</h5>
           </header>
-          <Main mobile={mobile} bool={bool} />
+          <Main />
           <ImageCards />
           <button onClick={e => window.scrollTo(0, 0)} > ^ </button>
         </div>
@@ -42,20 +40,22 @@ export default Home
 
 
 interface MainProps { }
-export const Main: FC<MainProps> = (props): JSX.Element => {
+export const Main: FC<MainProps> = (): JSX.Element => {
 
   const [count, setCount, setIncrement] = useIncrementData();
+  /** increment/decrement count based on input vars, see definition @module src/hooks*/
   const [hover, setHover] = useState<boolean>(false);
-
+  // prevents setInterval from running on hover
 
   useEffect(() => {
     if (hover) return;
     const interval = setInterval(() => {
       setIncrement(2, 'image', true);
-
+      // 2 = limit, 'target varible = image', true = increment
     }, 5000)
     return () => clearInterval(interval);
   }, [count, setCount, hover])
+  /** iterates imageslider data, see definition @module src/utils/siteInfo.ts  */
 
   return (
     <>
@@ -67,12 +67,14 @@ export const Main: FC<MainProps> = (props): JSX.Element => {
 
     </>
   );
+  {/** images imported from @module src/utils/siteInfo.ts */ }
 }
 
 interface ImageCards { }
 export const ImageCards: FC<ImageCards> = (props): JSX.Element => {
 
   const [hover, setHover] = useState<boolean>()
+  // hover target image adds effects
 
   return (
     <>
@@ -89,6 +91,7 @@ export const ImageCards: FC<ImageCards> = (props): JSX.Element => {
           </>
         )
       })}
+      {/** images imported from @module src/utils/siteInfo.ts */}
     </>
   )
 };
