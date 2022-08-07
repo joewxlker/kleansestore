@@ -1,6 +1,5 @@
-// src/pages/api/examples.ts
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
-import { stripe } from "../../server/api's/stripe";
+import { stripe } from "../../server/api's/all";
 
 const getStripeItems: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
 
