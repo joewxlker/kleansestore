@@ -2,10 +2,12 @@
 import * as trpc from "@trpc/server";
 import * as trpcNext from "@trpc/server/adapters/next";
 import { mongo } from '../db/mongo';
-import { stripe } from "../api's/stripe"
-import { sendgrid } from "../api's/sendgrid"
+import { stripe, sendgrid } from "../api's/all"
 
 export const createContext = (opts?: trpcNext.CreateNextContextOptions) => {
+
+  // create context here to allow strong typing from end 2 end
+
   const req = opts?.req;
   const res = opts?.res;
 
@@ -14,8 +16,11 @@ export const createContext = (opts?: trpcNext.CreateNextContextOptions) => {
     res,
     mongo,
     stripe,
-    sendgrid
+    sendgrid,
+
+    // refers to dependencies/ @types, 
   };
+
 };
 
 type Context = trpc.inferAsyncReturnType<typeof createContext>;
