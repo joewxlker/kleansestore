@@ -1,15 +1,12 @@
 import { GetStaticPaths, GetStaticProps } from "next";
 import { FC } from "react";
 import Layout from "../components/layout";
+import Products from "../components/products";
 import { inferQueryOutput } from "../utils/trpc";
 
-interface ShopProps { products: inferQueryOutput<'stripe.all-products'>, params: string }
-
-export const getStaticPaths: GetStaticPaths = async () => {
-    return {
-        paths: [{ params: { products: 'all-products' } }],
-        fallback: false
-    }
+interface ProductsProps {
+    products: inferQueryOutput<'stripe.all-products'>
+    params: string;
 }
 
 export const getStaticProps: GetStaticProps = async (context) => {
@@ -20,29 +17,19 @@ export const getStaticProps: GetStaticProps = async (context) => {
     return { props: { products, params } }
 }
 
-const Products: FC<ShopProps> = (props): JSX.Element => {
-
-    return (
-        <>
-            <Layout>
-                <div className='Products-entry-container'>
-                    <h1>{props.params} Items</h1>
-                    <h1>{props.products.map((props) => {
-                        return (
-                            <>
-                                {props.name}
-                                {props.description}
-                                <div style={{ background: `url(${props.images})`, backgroundPosition: 'center', backgroundSize: 'cover', height: '15vw', width: '20vw' }}>
-                                    {props.unit_amount}
-                                    {props.currency}
-                                </div>
-                            </>)
-                        // renders static data ( stripe product data) to elements 
-                    })}</h1>
-                </div>
-            </Layout>
-        </>
-    );
+export const getStaticPaths: GetStaticPaths = async () => {
+    return {
+        paths: [{ params: { products: 'all-products' } }],
+        fallback: false
+    }
 }
 
-export default Products
+const ProductsPage: FC<ProductsProps> = (props) => {
+    return (
+        <Layout>
+            <Products params={props.params} products={props.products} />
+        </Layout>
+    )
+}
+
+export default ProductsPage
