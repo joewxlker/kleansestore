@@ -20,6 +20,7 @@ const Layout: FC<LayoutProps> = ({ children }): JSX.Element => {
             </Head>
             {open && <Sidemenu />}
             <Header onOpenSidebar={e => { setOpen(e) }} sidebar={open} />
+            <div id='spacer' className="h-24 w-full bg-salmon"> g <br /> h <br /></div>
             {children}
             <Footer />
         </>
@@ -33,22 +34,24 @@ export const Header: FC<HeaderProps> = ({ onOpenSidebar, sidebar }): JSX.Element
     const callback = useCallback(() => {
         onOpenSidebar(!sidebar);
     }, [sidebar, onOpenSidebar])
+    // toggles setBoolean in layout component
 
     return (
         <>
-            <header className='' style={{ zIndex: '10', display: 'fixed' }} >
-                <span className='header-contact-info'>
+            <header className='bg-white fixed flex items-center h-20 flex-row shadow-xl w-screen justify-center z-10' >
+                <span className='w-2/6'>
                     <span className=''><p>+61 0333643418</p></span>
                     <span><p>kleanseaustralia@kleansebeauty.co.au</p></span>
                 </span>
-                <div className=''>
+                <div className='w-2/6 flex flex-row justify-evenly'>
                     <Link href='/'><a>HOME</a></Link>
                     <Link href='/all-products'><a>PRODUCTS</a></Link>
                     <Link href='/contact'><a>CONTACT</a></Link>
                     <Link href='/about'><a>ABOUT</a></Link>
                 </div>
-                <span className='header-button-container'>
+                <span className='w-2/6 flex justify-center'>
                     <button onClick={callback}>CART</button>
+                    {/**  triggers useCallback */}
                 </span>
                 {/* {cartItems.length > 0 && <div className='cart-notifier'></div>} */}
             </header>
@@ -59,22 +62,22 @@ export const Header: FC<HeaderProps> = ({ onOpenSidebar, sidebar }): JSX.Element
 
 export const Footer: FC<FooterProps> = (): JSX.Element => {
     return (
-        <div className='footer-main'>
-            <div className='footer-text-container'>
+        <div className='flex flex-row relative w-screen justify-center z-2'>
+            <div className=''>
                 {/* <img src={kleanseLogo} /> */}
-                <p className='footer-p'>copyright  kleanse industries limited...</p>
+                <p className=''>copyright  kleanse industries limited...</p>
             </div>
-            <div className='footer-links-container'>
-                <a className='footer-svg-link' href=''><i className='footer-svg' ></i></a>
-                <a className='footer-svg-link' href=''><i className='footer-svg' ></i></a>
-                <a className='footer-svg-link' href=''><i className='footer-svg' ></i></a>
+            <div className=''>
+                <a className='' href=''><i className='' ></i></a>
+                <a className='' href=''><i className='' ></i></a>
+                <a className='' href=''><i className='' ></i></a>
             </div>
             <div className='additional-links'>
-                <Link className='text-link' href=''><a>about</a></Link>
-                <Link className='text-link' href=''><a>privacy policy</a></Link>
-                <Link className='text-link' href=''><a>careers</a></Link>
-                <Link className='text-link' href=''><a>shipping</a></Link>
-                <Link className='text-link' href=''><a>shipping</a></Link>
+                <Link className='' href=''><a>about</a></Link>
+                <Link className='' href=''><a>privacy policy</a></Link>
+                <Link className='' href=''><a>careers</a></Link>
+                <Link className='' href=''><a>shipping</a></Link>
+                <Link className='' href=''><a>shipping</a></Link>
             </div>
         </div>
     );
@@ -84,6 +87,7 @@ export const Sidemenu: FC<SidemenuProps> = ({ }): JSX.Element => {
 
     const [errer, setError] = useState<string | null>(null);
     const { data: session } = useSession()
+    // using session here to render login / logout 
 
     if (session) {
         return (
@@ -94,7 +98,7 @@ export const Sidemenu: FC<SidemenuProps> = ({ }): JSX.Element => {
         )
     } return (
         <>
-            <div className=''>
+            <div className='fixed h-60 w-100 z-10 right-32 top-32 bg-grey'>
                 <Form type={['email', 'password', 'hidden']} target={'mongo.login'} buttons={[]} onResponse={e => signIn()} />
                 {errer !== null && <h1>{errer}</h1>}
                 <Link href={'/signup'}><a>Don't have an account? Sign up here</a></Link>
