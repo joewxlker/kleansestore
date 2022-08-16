@@ -99,7 +99,7 @@ export const Sidemenu: FC<SidemenuProps> = ({ }): JSX.Element => {
     } return (
         <>
             <div className='fixed h-60 w-100 z-10 right-32 top-32 bg-grey'>
-                <Form type={['email', 'password', 'hidden']} target={'mongo.login'} buttons={[]} onResponse={e => signIn()} />
+                <Form formData={{ email: '', password: '', hidden: '' }} target={'mongo.login'} buttons={[]} onResponse={e => signIn()} />
                 {errer !== null && <h1>{errer}</h1>}
                 <Link href={'/signup'}><a>Don't have an account? Sign up here</a></Link>
             </div>
