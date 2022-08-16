@@ -7,15 +7,12 @@ import { saltRounds } from "../api's/all";
 export const mongoDbRouter = createRouter()
 
   .mutation('login', {
-
     input: z.object({
-      email: z.string().nullish(),
-      password: z.string().nullish(),
-    }).nullish(),
+      email: z.string(),
+      password: z.string(),
+    }),
+    async resolve({ ctx, input }) {
 
-    async resolve({ ctx }) {
-
-      const input = ctx.req?.body[0]
       //email , password
       await ctx.mongo.connect();
       try {
@@ -38,13 +35,22 @@ export const mongoDbRouter = createRouter()
   })
 
   .mutation('sign-up', {
+    input: z.object({
+      firstname: z.string(),
+      lastname: z.string(),
+      email: z.string(),
+      password: z.string(),
+      day: z.string(),
+      month: z.string(),
+      year: z.string(),
+    }),
 
-    async resolve({ ctx }) {
-
-      const input = ctx.req?.body[0];
-
+    async resolve({ ctx, input }) {
+      console.log(input)
       await ctx.mongo.connect();
       //establish mongo db connection
+
+      if (!input) return false
       const login = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
       // login querries db for document containing query - { email : input.email }
       if (login !== null) return { result: false }
@@ -66,8 +72,9 @@ export const mongoDbRouter = createRouter()
         {
           to: process.env.OWNER!,
           from: process.env.EMAIL!,
-          subject: ` New customer contact email sent from ${ctx.req?.body.email}`,
-          text: `hello, ${ctx.req?.body.message} Sent from Kleanse Website`
+          subject: ` New customer contact email sent from ${input.email}`,
+          text: `hello, Sent from Kleanse Website`
+          //TODO create Validation Email
         })
       // sends verification/welcome email to new user once they have successfully made an account
 
@@ -95,15 +102,12 @@ export const stripeRouter = createRouter()
   })
 
   .query('create-checkout-session', {
-    input: z.object({
-      items: z.array(z.string())
-    }),
 
     async resolve({ ctx }) {
       const domainURL = process.env.DOMAIN;
       const session = await ctx.stripe.checkout.sessions.create({
         mode: 'payment',
-        line_items: ctx.req?.body,
+        line_items: ctx.req?.body.items,
         success_url: `${domainURL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${domainURL}/canceled.html`,
       })
@@ -116,9 +120,12 @@ export const stripeRouter = createRouter()
   )
 
   .mutation('create-account', {
-    async resolve({ ctx }) {
+    input: z.object({
+      email: z.string(),
+    }),
+    async resolve({ ctx, input }) {
       const user = await ctx.stripe.customers.create({
-        email: ctx.req?.body.email,
+        email: input.email,
       });
       if (user !== null) return { result: true }
       return { result: false }
@@ -136,7 +143,7 @@ export const sendgridRouter = createRouter()
       message: z.string()
     }),
 
-    async resolve({ ctx }) {
+    async resolve({ ctx, input }) {
 
       ctx.sendgrid.setApiKey(process.env.SENDGRID_API_KEY!)
 
@@ -144,7 +151,7 @@ export const sendgridRouter = createRouter()
         const contact: MailDataRequired = {
           to: process.env.OWNER!,
           from: process.env.EMAIL!,
-          subject: ` New customer contact email sent from ${ctx.req?.body.email}`,
+          subject: ` New customer contact email sent from ${input.email}`,
           text: `hello, ${ctx.req?.body.message} Sent from Kleanse Website`
         }
         //TODO add request params and conditional email templates
