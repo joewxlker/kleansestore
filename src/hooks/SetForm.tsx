@@ -1,25 +1,37 @@
 import { useState } from "react";
+// import { SignUpForm } from "../pages/signup";
 
-interface FormObj {
-  firstname?: string | undefined;
-  lastname?: string | undefined;
-  email?: string | undefined,
-  password?: string | undefined,
-  hidden?: string | undefined,
-  message?: string | undefined,
-  day?: number | undefined,
-  month?: number | undefined,
-  year?: number | undefined
+export interface SignUpForm {
+  firstname: string;
+  lastname: string;
+  email: string;
+  password: string;
+  hidden: string;
+  day: string;
+  month: string;
+  year: string;
 }
 
-export const formObj: FormObj = {}
+export interface LoginForm {
+  email: string;
+  password: string;
+  hidden: string;
+}
 
-const useSetForm = () => {
-  const [value, setForm] = useState(formObj);
+export interface ContactForm {
+  firstname: string;
+  message: string;
+  email: string
+}
+
+export type FormType<T extends SignUpForm | LoginForm | ContactForm> = T
+
+const useSetForm = (component: FormType<LoginForm | SignUpForm | ContactForm>) => {
+  // component = object, is either SignupForm or LoginForm
+  const [value, setForm] = useState(component);
   return [value, (event: React.ChangeEvent<HTMLInputElement>) => {
     setForm((oldValue) => {
       return { ...oldValue, [event.target.name]: event.target.value };
-      // sets form state based on input value without mutating state
     });
   },
   ] as const;
