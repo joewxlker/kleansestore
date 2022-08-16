@@ -1,24 +1,21 @@
 import { FC, FormEvent, useCallback, useState } from "react";
-import useSetForm from "../hooks/SetForm";
-import { client } from "../pages/_app";
+import useSetForm, { ContactForm, FormType, LoginForm, SignUpForm } from "../hooks/SetForm";
 import { dateData } from "../utils/siteInfo";
-import { inferMutationOutput } from "../utils/trpc";
 
-interface ButtonProps { buttons: Array<'day' | 'month' | 'year'>; }
-interface LoginProps { onResponse: (data?: inferMutationOutput<'mongo.login' | 'mongo.sign-up'>) => void }
-
-interface FormProps extends ButtonProps, LoginProps {
-    type: Array<'firstname' | 'lastname' | 'email' | 'password' | 'hidden' | 'message' | 'day' | 'month' | 'year'>;
+interface FormProps {
+    formData: SignUpForm | LoginForm | ContactForm
     target: `mongo.${'sign-up' | 'login'}` | `sendgrid.send-email`;
+    onResponse: (data: any) => Promise<void> | void;
+    buttons: Array<'day' | 'month' | 'year'> | [];
 };
 
-export const Form: FC<FormProps> = ({ type, target, buttons, onResponse }): JSX.Element => {
+export const Form: FC<FormProps> = ({ target, buttons, onResponse, formData }): JSX.Element => {
 
-    const [form, setForm] = useSetForm();
+    const [form, setForm] = useSetForm(formData);
     const [period, setPeriod] = useState('');
     const [loading, setLoading] = useState<boolean>(false);
 
-    const handleCallback = useCallback((data: inferMutationOutput<'mongo.login' | 'mongo.sign-up'>) => {
+    const handleCallback = useCallback((data: FormType<SignUpForm | LoginForm | ContactForm>) => {
         onResponse(data)
         // pass data to parent elements
     }, [onResponse])
@@ -28,20 +25,18 @@ export const Form: FC<FormProps> = ({ type, target, buttons, onResponse }): JSX.
         setLoading(true);
 
         const emptyCheck = Object.values(form).map(e => { return e === '' });
-        console.log(emptyCheck)
         // returns true at index of ''
         const filtered = emptyCheck.filter((x) => x === true);
         // filters through array of boolean values, returns empty array | [true, ...] 
-        if (((type.length - 1) + buttons.length) != Object.entries(form).length || filtered[0] === true)
+        if (((Object.values(formData).length - 1) + buttons.length) != Object.entries(form).length || filtered[0] === true)
             /** -1 here to remove hidden input value from equation, 
              * checks length of properties passed to component matches form input length.
             */
             return setLoading(false);
         // returns, no data is sent to server
 
-        const res: any = await client.mutation(target, form);
         //tRPC request
-        handleCallback(res)
+        handleCallback(form)
 
         //TODO fix infered output typing from tRPC
     }
@@ -51,7 +46,7 @@ export const Form: FC<FormProps> = ({ type, target, buttons, onResponse }): JSX.
             <form onSubmit={handleSubmit}>
                 <>
 
-                    {type.map((types) => {
+                    {Object.keys(formData).map((types) => {
                         /** type is passed from parent elements,  */
                         return (
                             <input
@@ -100,7 +95,7 @@ export const Form: FC<FormProps> = ({ type, target, buttons, onResponse }): JSX.
 
 
                 </>
-                <button type='submit' disabled={!loading}> Submit </button>
+                <button type='submit' disabled={false}> Submit </button>
             </form>
         </>
     )
