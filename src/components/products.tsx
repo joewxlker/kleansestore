@@ -1,4 +1,3 @@
-import { GetStaticProps } from "next";
 import { FC } from "react";
 import { inferQueryOutput } from "../utils/trpc";
 
