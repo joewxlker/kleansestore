@@ -7,7 +7,7 @@ import { mongoDbRouter, sendgridRouter, stripeRouter } from "./routes";
 export const appRouter = createRouter()
 
   //appRouter = main router
-  .transformer(superjson)
+  // .transformer(superjson)
   .merge("mongo.", mongoDbRouter)
   .merge("stripe.", stripeRouter)
   .merge("sendgrid.", sendgridRouter)
