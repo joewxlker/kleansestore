@@ -101,7 +101,7 @@ export const Sidemenu: FC<SidemenuProps> = ({ }): JSX.Element => {
             <div className='fixed h-60 w-100 z-10 right-32 top-32 bg-grey'>
                 <Form formData={{ email: '', password: '', hidden: '' }} target={'mongo.login'} buttons={[]} onResponse={e => signIn()} />
                 {errer !== null && <h1>{errer}</h1>}
-                <Link href={'/signup'}><a><p>Don't have an account? Sign up here</p></a></Link>
+                <Link href={'/signup'}><a><p>Don&#39;t have an account? Sign up here</p></a></Link>
             </div>
         </>
     )
