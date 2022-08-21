@@ -10,17 +10,8 @@ import Products from '../components/products'
 interface HomeProps { products: inferQueryOutput<'stripe.all-products'> }
 /** infer query output infers typing based on routes defined {@module src/server/router/routes.ts} */
 
-export const getStaticProps: GetStaticProps = async () => {
-  const req = await fetch('http://localhost:3000/api/stripe');
-  //TODO convert to useQuery
-  const products = await req.json();
-  return { props: { products } }
-  // populates website with static stripe product data
-}
-
 const Home: NextPage<HomeProps> = (props) => {
 
-  console.log(props)
   return (
     <Layout>
       <>
@@ -42,17 +33,21 @@ const Home: NextPage<HomeProps> = (props) => {
 export default Home
 
 
+export const getStaticProps: GetStaticProps = async () => {
+  const req = await fetch('http://localhost:3000/api/stripe');
+  const products = await req.json();
+  return { props: { products } }
+  // populates website with static stripe product data
+}
+
 interface MainProps { }
 export const Main: FC<MainProps> = (): JSX.Element => {
 
   const [count, setCount, setIncrement] = useIncrementData();
-  /** increment/decrement count based on input vars, see definition @module src/hooks*/
+  /** increment/decrement count based on input vars,  src/hooks*/
   const [hover, setHover] = useState<boolean>(false);
   // prevents setInterval from running on hover
 
-  useEffect(() => {
-    console.log(hover)
-  })
   useEffect(() => {
     if (hover) return;
     const interval = setInterval(() => {
@@ -61,12 +56,12 @@ export const Main: FC<MainProps> = (): JSX.Element => {
     }, 5000)
     return () => clearInterval(interval);
   }, [count, setCount, hover, setIncrement])
-  /** iterates imageslider data, see definition @module src/utils/siteInfo.ts  */
+  /** iterates imageslider data, see data here - src/utils/siteInfo.ts  */
 
   return (
     <>
-      <div className='bg-grey' onMouseEnter={e => setHover(false)} onMouseLeave={e => setHover(false)} style={{ position: 'fixed', height: '100vh', width: '100vw', top: '0', zIndex: '0' }} />
-      <div className='' onMouseEnter={e => setHover(true)} style={{ margin: '3rem 0rem', background: 'gray', zIndex: '1' }}>
+      <div className='bg-white' onMouseEnter={e => setHover(false)} onMouseLeave={e => setHover(false)} style={{ position: 'fixed', height: '100vh', width: '100vw', top: '0', zIndex: '0' }} />
+      <div className='bg-white' onMouseEnter={e => setHover(true)} style={{ margin: '3rem 0rem', background: 'gray', zIndex: '1' }}>
         <h1>{images[count['image']]?.title}</h1>
         <Image src={`${images[count['image']]?.image}`} width={2000} height={700} alt={``} />
       </div>
