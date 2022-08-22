@@ -2,11 +2,13 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { FC, useCallback, useState } from "react";
+import { FormType, LoginForm, SignUpForm } from "../hooks/SetForm";
+import { client } from "../pages/_app";
 import { Form } from "./form";
+import { Login } from "./login";
 
 interface LayoutProps { children: JSX.Element; }
-interface HeaderProps { onOpenSidebar: (e: any) => void, sidebar: boolean }
-interface SidemenuProps { }
+interface HeaderProps { }
 interface FooterProps { }
 
 const Layout: FC<LayoutProps> = ({ children }): JSX.Element => {
@@ -18,8 +20,7 @@ const Layout: FC<LayoutProps> = ({ children }): JSX.Element => {
             <Head>
                 <title>kleanse</title>
             </Head>
-            {open && <Sidemenu />}
-            <Header onOpenSidebar={e => { setOpen(e) }} sidebar={open} />
+            <Header />
             <div id='spacer' className="h-24 w-full bg-salmon"> g <br /> h <br /></div>
             {children}
             <Footer />
@@ -29,16 +30,15 @@ const Layout: FC<LayoutProps> = ({ children }): JSX.Element => {
 
 export default Layout;
 
-export const Header: FC<HeaderProps> = ({ onOpenSidebar, sidebar }): JSX.Element => {
+export const Header: FC<HeaderProps> = (): JSX.Element => {
 
-    const callback = useCallback(() => {
-        onOpenSidebar(!sidebar);
-    }, [sidebar, onOpenSidebar])
     // toggles setBoolean in layout component
+    const [cart, cartOpen] = useState(false);
+    const [login, loginOpen] = useState(false);
 
     return (
         <>
-            <header className='bg-white fixed flex items-center h-20 flex-row shadow-xl w-screen justify-center z-10' >
+            <header className='bg-white fixed flex items-center h-20 flex-row shadow-xl w-screen justify-center z-20' style={{ zIndex: '100' }} >
                 <span className='w-2/6'>
                     <span className=''><p>+61 0333643418</p></span>
                     <span><p>kleanseaustralia@kleansebeauty.co.au</p></span>
@@ -49,12 +49,15 @@ export const Header: FC<HeaderProps> = ({ onOpenSidebar, sidebar }): JSX.Element
                     <Link href='/contact'><a>CONTACT</a></Link>
                     <Link href='/about'><a>ABOUT</a></Link>
                 </div>
-                <span className='w-2/6 flex justify-center'>
-                    <button onClick={callback}>CART</button>
+                <span className='w-2/6 flex justify-center flex-row justify-evenly'>
+                    <button onMouseEnter={e => { cartOpen(true); loginOpen(false) }}>CART</button>
+                    <button onMouseEnter={e => { loginOpen(true); cartOpen(false) }}>LOGIN</button>
                     {/**  triggers useCallback */}
                 </span>
                 {/* {cartItems.length > 0 && <div className='cart-notifier'></div>} */}
             </header>
+            {login && <><div className='absolute h-screen w-screen z-10 mt-20' onMouseEnter={e => loginOpen(false)} />
+                <Login /></>}
 
         </>
     )
@@ -62,7 +65,7 @@ export const Header: FC<HeaderProps> = ({ onOpenSidebar, sidebar }): JSX.Element
 
 export const Footer: FC<FooterProps> = (): JSX.Element => {
     return (
-        <div className='flex flex-row relative w-screen justify-center z-2'>
+        <div className='relative bottom-0 flex flex-row w-screen justify-center z-2'>
             <div className=''>
                 {/* <img src={kleanseLogo} /> */}
                 <p className=''>copyright  kleanse industries limited...</p>
@@ -81,31 +84,6 @@ export const Footer: FC<FooterProps> = (): JSX.Element => {
             </div>
         </div>
     );
-}
-
-export const Sidemenu: FC<SidemenuProps> = ({ }): JSX.Element => {
-
-    const [errer, setError] = useState<string | null>(null);
-    const { data: session } = useSession()
-    // using session here to render login / logout 
-
-    if (session) {
-        return (
-            <>
-                <button onClick={e => signOut()}>Log out</button>
-
-            </>
-        )
-    } return (
-        <>
-            <div className='fixed h-60 w-100 z-10 right-32 top-32 bg-grey'>
-                <Form formData={{ email: '', password: '', hidden: '' }} target={'mongo.login'} buttons={[]} onResponse={e => signIn()} />
-                {errer !== null && <h1>{errer}</h1>}
-                <Link href={'/signup'}><a><p>Don&#39;t have an account? Sign up here</p></a></Link>
-            </div>
-        </>
-    )
-
 }
 
 
