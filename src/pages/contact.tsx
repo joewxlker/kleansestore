@@ -12,7 +12,7 @@ const Contact: FC = ({ }): JSX.Element => {
     return (
         <Layout>
             <div className=''>
-                <Form formData={{ firstname: '', email: '', hidden: '', message: '' }} target={'sendgrid.send-email'} buttons={[]} onResponse={handleResponse} />
+                <Form formData={{ firstname: '', email: '', hidden: '', message: '' }} buttons={[]} onResponse={handleResponse} />
                 {/* contact form, doesnt require date of birth elements, pass empty array */}
                 {/* onResponse returns boolean from api */}
             </div>
