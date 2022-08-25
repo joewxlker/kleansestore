@@ -6,6 +6,7 @@ import { useIncrementData } from "../hooks/useIntervals";
 import { cards, images } from "../utils/siteInfo";
 import { inferQueryOutput } from "../utils/trpc";
 import Products from '../components/products'
+import { useSession } from "next-auth/react";
 
 interface HomeProps { products: inferQueryOutput<'stripe.all-products'> }
 /** infer query output infers typing based on routes defined {@module src/server/router/routes.ts} */
@@ -16,9 +17,6 @@ const Home: NextPage<HomeProps> = (props) => {
     <Layout>
       <>
         <div className='' >
-          <header className='z-20 block flex flex-column justify-center bg-salmon h-10 align-center mb-6'>
-            <h5 className='' onClick={e => ''}>Memberships Available!</h5>
-          </header>
           <Main />
           <ImageCards images={props.products} />
           <Products params={'all-products'} products={props.products} />
@@ -48,7 +46,10 @@ export const Main: FC<MainProps> = (): JSX.Element => {
   const [hover, setHover] = useState<boolean>(false);
   // prevents setInterval from running on hover
 
+  const { data: session } = useSession()
+
   useEffect(() => {
+    console.log(session)
     if (hover) return;
     const interval = setInterval(() => {
       setIncrement(2, 'image', true);
@@ -60,12 +61,51 @@ export const Main: FC<MainProps> = (): JSX.Element => {
 
   return (
     <>
-      <div className='bg-white' onMouseEnter={e => setHover(false)} onMouseLeave={e => setHover(false)} style={{ position: 'fixed', height: '100vh', width: '100vw', top: '0', zIndex: '0' }} />
-      <div className='bg-white' onMouseEnter={e => setHover(true)} style={{ margin: '3rem 0rem', background: 'gray', zIndex: '1' }}>
-        <h1>{images[count['image']]?.title}</h1>
-        <Image src={`${images[count['image']]?.image}`} width={2000} height={700} alt={``} />
-      </div>
+      <div key={count['image']} id='fadein' className='bg-white bg-gray z-20'
+        onMouseEnter={e => setHover(true)}
+        onMouseLeave={e => setHover(false)}>
+        <Image src={`${images[count['image']]?.image}`} width={2000} height={800} alt={``} />
 
+        <div className='absolute w-screen flex flex-col justify-center items-center h-1/2 top-0' style={{ height: `50vw`, minHeight: '40rem' }}>
+          <div className='relative h-2/6 w-2/6 flex flex-col justify-center items-center' style={{ minHeight: '10rem', minWidth: '20rem', }}>
+            <h1 className='text-white' style={{ fontSize: '2.7vw', fontWeight: '50' }}>{`${images[count['image']]?.title}`}</h1>
+            <p className=''>{`${images[count['image']]?.paragraph}`}</p>
+            <button
+              className='h-2/6 w-2/6 bg-grey text-white shadow-2xl hover:border border-white border-1'
+              onClick={e => { window.location.href = `${images[count['image']]?.href}` }}>
+              {`${images[count['image']]?.buttonText}`}
+            </button>
+          </div>
+        </div>
+        {/* image slider text/button container */}
+        {/* setIncrement custom hook increments image slider data object */}
+
+        <div className='h-8 w-screen relative bottom-0 z-20 -translate-y-10 flex flex-row justify-center items-center' style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
+          <button className='h-4 w-4 bg-white m-2 hover:bg-grey hover:border border-black border-1'
+            style={{
+              borderRadius: '25px',
+              boxShadow: 'inset 0rem 0.1rem 0.3rem 0.001rem rgba(0,0,0,0.5)',
+              opacity: `${count['image'] === 0 ? '100%' : '40%'}`,
+            }}
+            onClick={e => setCount('image', 0)} />
+          <button className='h-4 w-4 bg-white m-2 hover:bg-grey hover:border border-black border-1'
+            style={{
+              borderRadius: '25px',
+              boxShadow: 'inset 0rem 0.1rem 0.3rem 0.001rem rgba(0,0,0,0.5)',
+              opacity: `${count['image'] === 1 ? '100%' : '40%'}`,
+            }}
+            onClick={e => setCount('image', 1)} />
+          <button className='h-4 w-4 bg-white m-2 hover:bg-grey hover:border border-black border-1'
+            style={{
+              borderRadius: '25px',
+              boxShadow: 'inset 0rem 0.1rem 0.3rem 0.001rem rgba(0,0,0,0.5)',
+              opacity: `${count['image'] === 2 ? '100%' : '40%'}`,
+            }}
+            onClick={e => setCount('image', 2)} />
+        </div>
+        {/* round slider buttons container */}
+
+      </div>
     </>
   );
   {/** images imported from src/utils/siteInfo.ts */ }
