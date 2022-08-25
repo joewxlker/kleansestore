@@ -2,19 +2,25 @@
 export const images = [{
     title: 'KLEANSE  X  HYGIENE',
     paragraph: "",
-    image: '/images/marketing/kleanse_logo_black_no_background.png',
+    buttonText: 'READ MORE',
+    href: '',
+    image: '/images/models/womenwithflower.jpg',
     active: [true, false, false]
 },
 {
-    title: 'KLEANSE AND COFFEE',
+    title: 'KLEANSE X TEA',
     paragraph: '',
-    image: '/images/marketing/kleanse_logo_black.jpg',
+    buttonText: 'VIEW PRODUCTS',
+    href: '',
+    image: '/images/models/womenputtingcream.jpg',
     active: [false, true, false]
 },
 {
     title: 'KLEANSE  REWARDS',
     paragraph: '',
-    image: '/images/marketing/kleanse_logo_white_no_background.png',
+    buttonText: 'SAVE NOW',
+    href: '',
+    image: '/images/models/womenwithbrush.jpg',
     active: [false, false, true]
 }
     // main image slider data
