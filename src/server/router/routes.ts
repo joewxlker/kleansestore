@@ -46,14 +46,12 @@ export const mongoDbRouter = createRouter()
     }),
 
     async resolve({ ctx, input }) {
-      console.log(input)
       await ctx.mongo.connect();
       //establish mongo db connection
 
-      if (!input) return false
       const login = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
       // login querries db for document containing query - { email : input.email }
-      if (login !== null) return { result: false }
+      if (login !== null) return { result: 'ACCOUNT_EXISTS' }
       // login = mongo db documument |  null
       const createHash = async (password: string) => {
         const hashed = await bcrypt.hash(password, saltRounds)
@@ -61,9 +59,7 @@ export const mongoDbRouter = createRouter()
       }
 
       const hash = await createHash(input.password);
-      // hash = encrypted password
       const mongouser = ({ ...input, ['password']: hash });
-      // mongouser = new user object with hash instead of plain text password; 
       await ctx.mongo.db('onlinestore').collection('user_data').insertOne(mongouser);
       // inserts new user to DB
       await ctx.stripe.customers.create({ email: input.email });
@@ -78,7 +74,42 @@ export const mongoDbRouter = createRouter()
         })
       // sends verification/welcome email to new user once they have successfully made an account
 
-      return { result: true }
+      return { result: 'SUCCESS' }
+
+    }
+  })
+  .mutation('mongo-carts', {
+
+    input: z.object({
+      session: z.string(),
+      item: z.object({
+        image: z.string(),
+        price: z.string(),
+        quantity: z.number(),
+      }),
+    }),
+
+    async resolve({ ctx, input }) {
+      await ctx.mongo.connect();
+
+      const exists = await ctx.mongo.db('online-store').collection('carts').findOne({ session: input.session });
+      if (exists === null) {
+        await ctx.mongo.db('online-store').collection('carts').insertOne({ session: input.session, cart: [input.item] })
+        return true
+      }
+      // // queries db for active cart session, creates cart session if not
+
+      // else {
+      const filtered = exists.cart.filter((x: typeof input) => x.item.price === input.item.price);
+      // checks if added item already exists
+      if (filtered.length === 0) {
+        // pushes new item into cart array
+        // await ctx.mongo.db('online-store').collection('carts').updateOne({ session: input.session }, { $set: { cart: [...exists.cart, input.item] } })
+        // console.log(await ctx.mongo.db('online-store').collection('carts').findOne({ session: input.session }))
+        return true
+      }
+      // }
+      return false
 
     }
   })
@@ -89,9 +120,7 @@ export const stripeRouter = createRouter()
     async resolve({ ctx }) {
       const getProducts = async () => {
         const product = await ctx.stripe.products.list();
-        // fetches all products [{}]
         const price = await ctx.stripe.prices.list();
-        // fetches all prices [{}]
         const productData = product.data.map((x, index) => { return { ...x, ...price.data[index] } })
         // returns an array of new product obj which includes both product and price key/values
         return productData
