@@ -17,19 +17,18 @@ export const Login: FC<LoginProps> = ({ }): JSX.Element => {
         res.result ? signIn() : setError('INVALID INPUT');
     }
 
-    if (session) {
-        return (
-            <>
-                <button onClick={e => signOut()}>Log out</button>
-            </>
-        )
-    } return (
+    // if (session) {
+    //     return (
+    //         <>
+    //             <button onClick={e => signOut()}>Log out</button>
+    //         </>
+    //     )
+    // }
+    return (
         <>
-            <div className='fixed h-60 w-100 z-10 right-20 top-20 bg-grey flex flex-col justify-center items-center'>
-                <Form formData={{ email: '', password: '', hidden: '' }} buttons={[]} onResponse={handleRequest} />
-                {errer !== null && <h1 className='text-white text-center'>{errer}</h1>}
-                <Link href={'/signup'}><a><p className=' relative text-white text-center'>Don&#39;t have an account? Sign up here</p></a></Link>
-            </div>
+            <Link href={'/signup'}><a><p className=' relative bottom-0 text-white text-center'>Don&#39;t have an account? Sign up here</p></a></Link>
+            <Form formData={{ email: '', password: '', hidden: '' }} buttons={[]} onResponse={handleRequest} />
+            {errer !== null && <h1 className='text-white text-center'>{errer}</h1>}
         </>
     )
 
