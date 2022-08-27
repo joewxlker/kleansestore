@@ -30,6 +30,7 @@ const useSetForm = (component: FormType<LoginForm | SignUpForm | ContactForm>) =
   // component = object, is either SignupForm or LoginForm
   const [value, setForm] = useState(component);
   return [value, (event: React.ChangeEvent<HTMLInputElement>, argument: string) => {
+    console.log(event.target.name)
     if (event.target.name !== undefined) return setForm((oldValue) => {
       return { ...oldValue, [event.target.name]: event.target.value };
     }); else return setForm((oldValue) => {

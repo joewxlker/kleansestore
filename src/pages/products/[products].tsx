@@ -1,7 +1,7 @@
 import { GetStaticPaths, GetStaticProps } from "next";
-import { FC } from "react";
+import { FC, useState } from "react";
 import Layout from "../../components/layout";
-import Products from "../../components/products";
+import Products, { ProductData } from "../../components/products";
 import { inferQueryOutput } from "../../utils/trpc";
 
 interface ProductsProps {
@@ -25,6 +25,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
 }
 
 const ProductsPage: FC<ProductsProps> = (props) => {
+
+    const [productData, setProductData] = useState<ProductData | undefined>();
+
     return (
         <Layout>
             <div className="w-screen h-screen pt-40">

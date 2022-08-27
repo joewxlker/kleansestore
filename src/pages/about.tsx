@@ -6,6 +6,7 @@ const About: NextPage = () => {
     return (
         <Layout>
             <>
+
             </>
         </Layout>
 
