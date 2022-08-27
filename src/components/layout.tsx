@@ -2,6 +2,7 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { FC, useState } from "react";
+import { Cart } from "./cart";
 import { Login } from "./login";
 
 interface LayoutProps { children: JSX.Element; }
@@ -56,7 +57,8 @@ export const Header: FC<HeaderProps> = (): JSX.Element => {
                 </div>
             </>}
             {cart && <><div className='fixed top-0 h-screen w-screen z-10 mt-20' onMouseEnter={e => cartOpen(false)} />
-                <div id='hardfadein' className='fixed h-60 w-80 z-10 right-20 top-20 bg-grey flex flex-col justify-center items-center'>
+                <div id='hardfadein' className='fixed w-80 right-20 z-10 shadow-2xl top-20 bg-white flex flex-col justify-center items-center' style={{ minHeight: '20vh' }}>
+                    <Cart onCloseCart={() => cartOpen(false)} />
                 </div>
             </>}
 
@@ -66,7 +68,7 @@ export const Header: FC<HeaderProps> = (): JSX.Element => {
 
 export const Footer: FC<FooterProps> = (): JSX.Element => {
     return (
-        <div id='hardfadein' className='relative bottom-0 flex flex-row w-screen justify-center z-2 bg-grey h-80 flex flex-col justify-center items-center'
+        <div id='hardfadein' className='flex flex-row w-screen justify-center z-80 bg-grey h-80 flex flex-col justify-center items-center'
             style={{ color: 'rgb(120,120,120)' }}>
             <div className=''>
                 {/* <img src={kleanseLogo} /> */}
