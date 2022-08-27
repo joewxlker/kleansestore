@@ -19,6 +19,7 @@ export const Form: FC<FormProps> = ({ buttons, onResponse, formData }): JSX.Elem
     }, [onResponse])
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        console.log(form)
         event.preventDefault()
         setLoading(true)
 
@@ -53,7 +54,7 @@ export const Form: FC<FormProps> = ({ buttons, onResponse, formData }): JSX.Elem
                                 value={form[types]}
                                 type={types}
                                 placeholder={types}
-                                onChange={setForm} />)
+                                onChange={e => setForm(e, '')} />)
                         //renders form text input elements  
                     })}
 
