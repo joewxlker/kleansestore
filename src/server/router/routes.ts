@@ -1,8 +1,9 @@
 import { MailDataRequired } from "@sendgrid/mail";
 import { createRouter } from "./context";
-import { z } from 'zod';
+import { string, z } from 'zod';
 import * as bcrypt from "bcrypt";
-import { saltRounds } from "../api's/all";
+import { saltRounds, stripe } from "../api's/all";
+import { setLazyProp } from "next/dist/server/api-utils";
 
 export const mongoDbRouter = createRouter()
 
@@ -34,6 +35,17 @@ export const mongoDbRouter = createRouter()
     }
   })
 
+  .mutation('mongo-session', {
+    input: z.object({
+      email: z.string(),
+      session: z.string(),
+    }),
+    async resolve({ ctx, input }) {
+      await ctx.mongo.db('onlinestore').collection('user_data').updateOne({ email: input.email }, { $set: { session: input.session } });
+      return true
+    }
+  })
+
   .mutation('sign-up', {
     input: z.object({
       firstname: z.string(),
@@ -59,7 +71,7 @@ export const mongoDbRouter = createRouter()
       }
 
       const hash = await createHash(input.password);
-      const mongouser = ({ ...input, ['password']: hash });
+      const mongouser = ({ ...input, ['password']: hash, cart: [] });
       await ctx.mongo.db('onlinestore').collection('user_data').insertOne(mongouser);
       // inserts new user to DB
       await ctx.stripe.customers.create({ email: input.email });
@@ -78,39 +90,68 @@ export const mongoDbRouter = createRouter()
 
     }
   })
+
   .mutation('mongo-carts', {
 
     input: z.object({
-      session: z.string(),
+      email: z.string(),
       item: z.object({
         image: z.string(),
-        price: z.string(),
+        default_price: string(),
         quantity: z.number(),
+        name: z.string(),
+        amount: z.number(),
+      }),
+      options: z.object({
+        insert: z.boolean(),
+        clear: z.boolean().nullish()
       }),
     }),
 
     async resolve({ ctx, input }) {
       await ctx.mongo.connect();
+      const user = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
 
-      const exists = await ctx.mongo.db('online-store').collection('carts').findOne({ session: input.session });
-      if (exists === null) {
-        await ctx.mongo.db('online-store').collection('carts').insertOne({ session: input.session, cart: [input.item] })
-        return true
+      if (user !== null && (user.cart === undefined || user.cart.length === 0)) {
+        // cart is either undefined or empty array | creates cart array or adds item to empty array
+        console.log('cart is empty or undefined')
+        await ctx.mongo.db('onlinestore').collection('user_data').updateOne({ email: input.email }, { $set: { cart: [input.item] } })
+        const updatedCart = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
+        return updatedCart?.cart
       }
-      // // queries db for active cart session, creates cart session if not
 
-      // else {
-      const filtered = exists.cart.filter((x: typeof input) => x.item.price === input.item.price);
-      // checks if added item already exists
-      if (filtered.length === 0) {
-        // pushes new item into cart array
-        // await ctx.mongo.db('online-store').collection('carts').updateOne({ session: input.session }, { $set: { cart: [...exists.cart, input.item] } })
-        // console.log(await ctx.mongo.db('online-store').collection('carts').findOne({ session: input.session }))
-        return true
+      const filtered = user?.cart.filter((x: typeof input.item) => x?.default_price === input.item?.default_price);
+
+      if (user !== null && filtered.length === 0 && input.options.insert && input.options.clear === null) {
+        // item doesnt exist in db and insert = true | inserts item into cart array in database
+        console.log('inserting new item to db')
+        await ctx.mongo.db('onlinestore').collection('user_data').updateOne({ email: input.email }, { $set: { cart: [...user.cart, input.item] } })
+        const updatedCart = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
+        return updatedCart?.cart
+
+      } else if (user !== null && !input.options.insert && !input.options.clear && filtered.length > 0) {
+        // user and item exist in db, insert false | removes item from database
+        console.log('removing item from database')
+        const index = user.cart.findIndex((x: typeof input.item) => { return x.default_price === input.item.default_price; })
+        // finds index of input object in db
+
+        user.cart.splice(index, 1);
+        await ctx.mongo.db('onlinestore').collection('user_data').updateOne({ email: input.email }, { $set: { cart: user.cart } })
+        const updatedCart = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
+        return updatedCart?.cart
       }
-      // }
+      console.log('no conditions met')
       return false
+    }
+  })
 
+  .query('mongo-carts', {
+    input: z.object({
+      email: z.string()
+    }),
+    async resolve({ ctx, input }) {
+      const cart = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
+      return cart
     }
   })
 
