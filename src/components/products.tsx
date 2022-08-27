@@ -1,13 +1,23 @@
 import { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useContext, useEffect, useState } from "react";
 import Stripe from "stripe";
-import { client } from "../pages/_app";
+import { CartContext, client } from "../pages/_app";
 import { inferQueryOutput } from "../utils/trpc";
 
-interface ShopProps { products?: inferQueryOutput<'stripe.all-products'>, params: string }
+interface ShopProps {
+    products?: inferQueryOutput<'stripe.all-products'>, params: string;
+}
 
+export interface RawProductData {
+    images: Array<string | undefined>;
+    default_price: string | Stripe.Price | null | undefined;
+    unit_amount: number | null | undefined;
+    name: string;
+    quantity: number;
+    description: string | null;
+}
 
 
 const Products: FC<ShopProps> = (props): JSX.Element => {
@@ -15,11 +25,24 @@ const Products: FC<ShopProps> = (props): JSX.Element => {
     const { data: session } = useSession()
 
     const [overlay, openOverlay] = useState(false);
-    const [productData, setProductData] = useState<ProductData>();
+    const [productData, setProductData] = useState<RawProductData>({ images: [''], default_price: '', name: '', unit_amount: 0, quantity: 0, description: '' });
+    //@ts-ignore
+    const [cartItems, setCartItems] = useContext(CartContext);
 
-    const handleClick = (images: string, name: string, amount: number, price: string | Stripe.Price, quantity: number) => {
-        setProductData({ image: images, name: name, amount: amount, default_price: JSON.stringify(price), quantity: quantity });
-        openOverlay(true);
+    const handleClick = (data: RawProductData) => {
+        // react component functions use raw product data
+        setProductData(data);
+        productData !== undefined && openOverlay(true);
+    }
+
+    const setContext = (item: ProductData) => {
+        // react callback functions use refined product data
+        // if (session) return
+        if (cartItems === undefined) return setCartItems([item]);
+        const filtered = cartItems.filter((x: ProductData) => x.default_price === item.default_price);
+        if (filtered.length === 0) setCartItems([...cartItems, item]);
+        //TODO fix - setContext callback in overlay updates cart, products doesnt update cart
+        console.log(cartItems)
     }
 
     return (
@@ -31,9 +54,14 @@ const Products: FC<ShopProps> = (props): JSX.Element => {
                         <>
                             {data.metadata.category !== props.params && <div key={data.name} className='w-80 m-6 flex flex-col bg-white'>
                                 <button className='w-full hover:blur cursor-pointer' onClick={e => {
-                                    if (data.default_price === undefined || data.default_price === null) return;
-                                    const images = data.images[0] !== undefined ? data.images[0] : '';
-                                    handleClick(images, data.name, data.unit_amount! / 100, data.default_price, 1)
+                                    handleClick({
+                                        images: data.images,
+                                        default_price: data.default_price,
+                                        name: data.name,
+                                        unit_amount: data.unit_amount,
+                                        description: data.description,
+                                        quantity: 1
+                                    })
                                     // if no image url provided sets image to empty string
                                     // if no price provided, disables usage
                                 }
@@ -43,43 +71,31 @@ const Products: FC<ShopProps> = (props): JSX.Element => {
                                 </button>
                                 <h2>{data.name}</h2>
                                 {data.unit_amount! / 100}
-                                <button
-                                    className=''
-                                    onClick={e => {
-                                        if (data.default_price === undefined || data.default_price === null) return;
-                                        const images = data.images[0] !== undefined ? data.images[0] : '';
-                                        const amount = data.unit_amount !== undefined ? data.unit_amount : 0;
-                                        const finalAmount = amount !== null ? amount : 0;
-                                        // if no image url provided sets image to empty string
-                                        // if no unit_amount provided, sets unit amount to 0 on client side
-                                        handleCartUpdates(
-                                            {
-                                                image: images,
-                                                name: data.name,
-                                                amount: finalAmount,
-                                                default_price: JSON.stringify(data.default_price),
-                                                quantity: 1
-                                            }, session)
-                                    }
-                                    }
-                                    disabled={
-                                        data.default_price === undefined || data.default_price === null
-                                    }
-                                >Add to cart</button>
+                                <AddToCartButton
+                                    data={{
+                                        images: data.images,
+                                        default_price: data.default_price,
+                                        name: data.name,
+                                        unit_amount: data.unit_amount,
+                                        quantity: 1,
+                                        description: data.description,
+                                    }}
+                                    onSetContext={item => setContext(item)}
+                                    session={session} />
                             </div>}
                         </>
                     )
                     // renders static data ( stripe product data) to elements 
                 })}</div>
             </div>
-            {overlay && <ProductOverlay onCloseOverlay={() => openOverlay(false)} data={productData!} />}
+            {overlay && <ProductOverlay onCloseOverlay={() => openOverlay(false)} data={productData} onSetContext={item => setContext(item)} />}
         </>
     );
 }
 
 export default Products
 
-interface ProductData {
+export interface ProductData {
     image: string;
     name: string;
     amount: number;
@@ -88,52 +104,120 @@ interface ProductData {
 }
 interface ProductOverlayProps {
     onCloseOverlay: () => void;
-    data: ProductData;
+    data: RawProductData;
+    onSetContext: (item: ProductData) => void;
 }
-export const ProductOverlay: FC<ProductOverlayProps> = ({ onCloseOverlay, data }): JSX.Element => {
-
+export const ProductOverlay: FC<ProductOverlayProps> = ({ onCloseOverlay, data, onSetContext }): JSX.Element => {
 
     const { data: session } = useSession()
 
     const callBack = useCallback(() => {
-        onCloseOverlay();
-    }, [onCloseOverlay])
+        onCloseOverlay()
+    }, [])
 
     return (
-        <div className='fixed top-0 w-screen h-screen flex items-center justify-center'>
-            <div className='w-4/6 h-4/6 bg-grey'>
-                <div className='h-20 w-full bg-salmon'>
-                    <button onClick={e => callBack()}>X</button>
-                </div>
-                <div className='z-1 relative w-full h-full flex flex-col'>
-                    <div key={data.name} className='w-80 m-5 flex flex-col bg-white'>
-                        <div className='w-full h-full cursor-pointer'>
-                            <Image alt='' src={data.image !== undefined ? data.image : ''} height={350} width={400} />
+        <>
+            <div id='fadein' className='fixed top-0 w-screen h-screen flex items-center justify-center' style={{ zIndex: '110', height: '100vh' }}>
+                <div className='w-4/6 bg-white shadow-xl' style={{ height: '60%' }}>
+
+                    <div className='h-20 w-full bg-grey flex justify-end'>
+                        <button className='h-full w-2/6 bg-white' onClick={e => callBack()}>X</button>
+                    </div>
+
+                    <div className='flex flex-col justify-center h-full' style={{ height: '80%' }}>
+
+                        <div className='z-1 relative h-full flex flex-row'>
+
+                            <div key={data.name} className='w-4/6 flex flex-row' style={{ height: 'fit-content' }}>
+                                <div className='h-full w-full flex flex-col justify-start'>
+                                    <div className='w-full h-full'>
+                                        <Image alt='' src={data.images[0]!} height={390} width={800} objectFit={'cover'} />
+                                    </div>
+                                    <div className='h-1/6 flex flex-col text-grey'>
+                                        <h2>{data.name}</h2>
+                                        {data.unit_amount}
+                                    </div>
+                                </div>
+                                <div className='w-1/6 h-4/6 flex flex-col items-center'>
+                                    <div className='h-1/3 w-full'>
+                                        <Image alt='' src={data.images[0]!} height={122.4} width={130} objectFit={'cover'} />
+                                    </div>
+                                    <div className='h-1/3 w-full'>
+                                        <Image alt='' src={data.images[0]!} height={122.4} width={130} objectFit={'cover'} />
+                                    </div>
+                                    <div className='h-1/3 w-full'>
+                                        <Image alt='' src={data.images[0]!} height={122.4} width={130} objectFit={'cover'} />
+                                    </div>
+                                </div>
+                            </div>
+                            {/* images */}
+
+                            <div className='w-2/6 bg-white p-8 flex flex-col' style={{ height: '80%' }}>
+                                <h1 className="text-grey">{data.description}</h1>
+                            </div>
                         </div>
-                        <h2>{data.name}</h2>
-                        {data.amount}
-                        <button className='' onClick={e => {
-                            handleCartUpdates(
-                                {
-                                    image: data.image,
-                                    default_price: data.default_price,
-                                    quantity: data.quantity, name: data.name,
-                                    amount: data.amount
-                                }, session)
-                        }
-                        }>Add to cart</button>
+                        <AddToCartButton data={data} onSetContext={onSetContext} session={session} />
                     </div>
                 </div>
             </div>
-        </div>
+            <div id='hardfadein' className='h-full fixed top-0 w-full' style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: '100' }} />
+        </>
     )
 }
 
-export const handleCartUpdates = async (item: ProductData, session: Session | null) => {
 
-    if (session !== null) {
-        //TODO use session to validate user email, asign cart items to user email. 
-        const res = client.mutation('mongo.mongo-carts', { session: JSON.stringify(session), item: item });
+interface AddToCartButtonProps {
+    onSetContext: (item: ProductData) => void;
+    data: RawProductData;
+    session: null | Session;
+}
+
+const AddToCartButton: FC<AddToCartButtonProps> = ({ onSetContext, data, session }): JSX.Element => {
+
+    const onCallback = useCallback((item: ProductData) => {
+        onSetContext(item)
+    }, [])
+
+    return (
+        <button
+            className=''
+            onClick={e => {
+                if (data.default_price === undefined || data.default_price === null) return;
+                const images = data.images[0] !== undefined ? data.images[0] : '';
+                const amount = data.unit_amount !== undefined ? data.unit_amount : 0;
+                const finalAmount = amount !== null ? amount : 0;
+                // if no image url provided sets image to empty string
+                // if no unit_amount provided, sets unit amount to 0 on client side
+                const item = {
+                    image: images,
+                    name: data.name,
+                    amount: finalAmount,
+                    default_price: JSON.stringify(data.default_price),
+                    quantity: 1
+                };
+                handleCartUpdates(item, session, true, null).then((cart) => {
+                    onCallback(item);
+                    console.log(cart)
+                });
+            }
+            }
+            disabled={
+                data.default_price === undefined || data.default_price === null
+            }
+        >Add to cart</button>
+    )
+}
+
+export const handleCartUpdates = async (item: ProductData, session: Session | null, insert: boolean, clear: null | boolean) => {
+
+    if (session) {
+        //TODO session.email.use possibly undefined
+        //@ts-ignore
+        const res = await client.mutation('mongo.mongo-carts', { email: session.user?.email, item: item, options: { insert: insert, clear: clear } });
+        if (res !== false) {
+            return res
+        }
+        return false
     }
     return setLocalStorage(item)
 
@@ -154,3 +238,4 @@ export const setLocalStorage = (data: ProductData) => {
     // checks storage against input data and inserts data into array if no duplicates, else inserts new json array  
 
 }
+
