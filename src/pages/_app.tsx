@@ -6,11 +6,26 @@ import superjson from "superjson";
 import "../styles/globals.css";
 import { SessionProvider } from "next-auth/react"
 import { createTRPCClient } from "@trpc/client";
+import { createContext, useState } from "react";
+
+//@ts-ignore
+export const CartContext = createContext();
 
 const MyApp: AppType = ({ Component, pageProps: { session, ...pageProps } }) => {
-  return <SessionProvider session={session}>      <Component {...pageProps} />    </SessionProvider>
+
+  const [cartItems, setCartItems] = useState();
+
+  return (
+    <CartContext.Provider value={[cartItems, setCartItems]}>
+      <SessionProvider session={session}>
+        <Component {...pageProps} />
+      </SessionProvider>
+    </CartContext.Provider>
+  )
   // using next-auth session
 };
+
+
 
 const getBaseUrl = () => {
   if (typeof window !== "undefined") {
