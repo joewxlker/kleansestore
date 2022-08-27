@@ -1,26 +1,32 @@
 import type { GetStaticProps, NextPage } from "next";
 import Image from "next/image";
-import { FC, useEffect, useState } from "react";
+import { FC, useContext, useEffect, useState } from "react";
 import Layout from "../components/layout";
 import { useIncrementData } from "../hooks/useIntervals";
 import { cards, images } from "../utils/siteInfo";
 import { inferQueryOutput } from "../utils/trpc";
-import Products from '../components/products'
+import Products, { handleCartUpdates, ProductData } from '../components/products'
 import { useSession } from "next-auth/react";
+import { CartContext } from "./_app";
 
-interface HomeProps { products: inferQueryOutput<'stripe.all-products'> }
+interface HomeProps {
+  onCartUpdates: (items: ProductData) => void;
+  products: inferQueryOutput<'stripe.all-products'>
+}
 /** infer query output infers typing based on routes defined {@module src/server/router/routes.ts} */
 
 const Home: NextPage<HomeProps> = (props) => {
+
+  const [productData, setProductData] = useState<ProductData | undefined>();
 
   return (
     <Layout>
       <>
         <div className='' >
-          <Main />
+          <Slider />
           <ImageCards images={props.products} />
           <Products params={'all-products'} products={props.products} />
-          <button onClick={e => window.scrollTo(0, 0)} > ^ </button>
+          <button className=" fixed h-12 w-12 bg-salmon bottom-12 right-12 z-90" onClick={e => window.scrollTo(0, 0)} > ^ </button>
         </div>
       </>
     </Layout>
@@ -38,18 +44,17 @@ export const getStaticProps: GetStaticProps = async () => {
   // populates website with static stripe product data
 }
 
-interface MainProps { }
-export const Main: FC<MainProps> = (): JSX.Element => {
+interface SliderProps { }
+export const Slider: FC<SliderProps> = (): JSX.Element => {
 
   const [count, setCount, setIncrement] = useIncrementData();
   /** increment/decrement count based on input vars,  src/hooks*/
   const [hover, setHover] = useState<boolean>(false);
   // prevents setInterval from running on hover
 
-  const { data: session } = useSession()
+  // const { data: session } = useSession()
 
   useEffect(() => {
-    console.log(session)
     if (hover) return;
     const interval = setInterval(() => {
       setIncrement(2, 'image', true);
@@ -127,7 +132,12 @@ export const ImageCards: FC<ImageCards> = (props): JSX.Element => {
             <div className=' w-2/4' onMouseEnter={e => { e.preventDefault(); setHover(true) }}>
               <h3 className=''>{info.title}</h3>
               <p className=''>{info.paragraph}</p>
-              <div className='w-90 h-80 bg-salmon z-3' style={{ backgroundImage: 'url("https://files.stripe.com/links/MDB8YWNjdF8xTEtIM1lFdTkwczBGNXpJfGZsX3Rlc3RfOEZvOU9XejJJRHV2NDBjS2dYTjdwSGtz00AYcNJHih")' }} />
+              <div className='w-90 h-80 bg-white z-3'
+                style={{
+                  backgroundImage: 'url("/images/models/moisturizer.svg")',
+                  backgroundPosition: 'center',
+                  backgroundSize: 'cover',
+                }} />
             </div>
           </>
         )
