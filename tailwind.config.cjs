@@ -1,12 +1,18 @@
 /** @type {import('tailwindcss').Config} */
+
 module.exports = {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
+  // purge: ["./src/pages/**/*.{js,jsx,ts,tsx}", './src/styles/**/*.css'],
   theme: {
     screens: {
-      sm: '480px',
-      md: '768px',
-      lg: '976px',
-      xl: '1440px',
+
+      'sm': '400px',
+
+      'md': '700px',
+      // => @media (min-width: 960px) { ... }
+
+      'lg': '1240px',
+      // => @media (min-width: 1440px) { ... }
     },
     colors: {
       'salmon': '#ffa58f',
@@ -15,8 +21,8 @@ module.exports = {
       'white': '#ffffff',
     },
     fontFamily: {
-      sans: ['Graphik', 'sans-serif'],
-      serif: ['Merriweather', 'serif'],
+      'sans': ['Graphik', 'sans-serif'],
+      'serif': ['Merriweather', 'serif'],
     },
     extend: {},
   },
