@@ -2,8 +2,7 @@ import { MailDataRequired } from "@sendgrid/mail";
 import { createRouter } from "./context";
 import { string, z } from 'zod';
 import * as bcrypt from "bcrypt";
-import { saltRounds, stripe } from "../api's/all";
-import { setLazyProp } from "next/dist/server/api-utils";
+import { saltRounds } from "../api's/all";
 
 export const mongoDbRouter = createRouter()
 
@@ -29,20 +28,20 @@ export const mongoDbRouter = createRouter()
         // return true, nextauth handles signin
       }
       catch (err) {
-        console.log(err);
         return { result: false }
       }
     }
   })
 
-  .mutation('mongo-session', {
+  .mutation('add-maillist', {
     input: z.object({
       email: z.string(),
-      session: z.string(),
     }),
     async resolve({ ctx, input }) {
-      await ctx.mongo.db('onlinestore').collection('user_data').updateOne({ email: input.email }, { $set: { session: input.session } });
-      return true
+      const exists = await ctx.mongo.db('onlinestore').collection('mail_list').findOne({ email: input.email });
+      const res = exists !== null ? null : await ctx.mongo.db('onlinestore').collection('mail_list').insertOne({ email: input.email });
+      if (res === null) return { result: 'EMAIL_EXISTS' };
+      return { result: 'ADDED_MAILLIST' };
     }
   })
 
@@ -76,14 +75,14 @@ export const mongoDbRouter = createRouter()
       // inserts new user to DB
       await ctx.stripe.customers.create({ email: input.email });
       // creates stripe customer account using input email
-      await ctx.sendgrid.send(
-        {
-          to: process.env.OWNER!,
-          from: process.env.EMAIL!,
-          subject: ` New customer contact email sent from ${input.email}`,
-          text: `hello, Sent from Kleanse Website`
-          //TODO create Validation Email
-        })
+      // await ctx.sendgrid.send(
+      //   {
+      //     to: process.env.OWNER!,
+      //     from: process.env.EMAIL!,
+      //     subject: ` New customer contact email sent from ${input.email}`,
+      //     text: `hello, Sent from Kleanse Website`
+      //     //TODO create Validation Email
+      //   })
       // sends verification/welcome email to new user once they have successfully made an account
 
       return { result: 'SUCCESS' }
@@ -110,6 +109,8 @@ export const mongoDbRouter = createRouter()
 
     async resolve({ ctx, input }) {
       await ctx.mongo.connect();
+
+      //TODO if item exists in DB, update quantity
       const user = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
 
       if (user !== null && (user.cart === undefined || user.cart.length === 0)) {
@@ -131,6 +132,8 @@ export const mongoDbRouter = createRouter()
 
       } else if (user !== null && !input.options.insert && !input.options.clear && filtered.length > 0) {
         // user and item exist in db, insert false | removes item from database
+        // TODO update quantity
+
         console.log('removing item from database')
         const index = user.cart.findIndex((x: typeof input.item) => { return x.default_price === input.item.default_price; })
         // finds index of input object in db
@@ -150,7 +153,7 @@ export const mongoDbRouter = createRouter()
       email: z.string()
     }),
     async resolve({ ctx, input }) {
-      const cart = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
+      const cart: any = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
       return cart
     }
   })
@@ -159,27 +162,36 @@ export const stripeRouter = createRouter()
 
   .query('all-products', {
     async resolve({ ctx }) {
-      const getProducts = async () => {
-        const product = await ctx.stripe.products.list();
-        const price = await ctx.stripe.prices.list();
-        const productData = product.data.map((x, index) => { return { ...x, ...price.data[index] } })
-        // returns an array of new product obj which includes both product and price key/values
-        return productData
-      }
-      const products = await getProducts();
-      return products;
+      const product = await ctx.stripe.products.list();
+      const price = await ctx.stripe.prices.list();
+      const productData = product.data.map((x, index) => { return { ...x, ...price.data[index] } })
+      // returns an array of new product obj which includes both product and price key/values
+      return productData
     }
   })
 
-  .query('create-checkout-session', {
+  .mutation('create-checkout-session', {
 
-    async resolve({ ctx }) {
+    input: z.object({
+      items: z.array(z.object({
+        price: z.string(),
+        quantity: z.number(),
+      })),
+      email: z.string().nullish(),
+    }),
+
+    async resolve({ ctx, input }) {
+
+      console.log(input.email);
       const domainURL = process.env.DOMAIN;
       const session = await ctx.stripe.checkout.sessions.create({
+        customer_email: input.email === null ? undefined : input.email,
         mode: 'payment',
-        line_items: ctx.req?.body.items,
-        success_url: `${domainURL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${domainURL}/canceled.html`,
+        shipping_address_collection: { allowed_countries: ['AU'] },
+        payment_method_types: ['afterpay_clearpay', 'card'],
+        line_items: input.items,
+        success_url: `${domainURL}/stripe/success.html?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${domainURL}/stripe/canceled.html`,
       })
       return { url: session.url };
       // creates stripe session on stripe servers
@@ -188,6 +200,17 @@ export const stripeRouter = createRouter()
     }
   }
   )
+  .query('session_id', {
+    input: z.object({
+      session_id: z.any()
+    }),
+
+    async resolve({ ctx, input }) {
+      if (input.session_id === undefined) return;
+      const session = await ctx.stripe.checkout.sessions.retrieve(input.session_id);
+      return { result: { ...session.shipping_details } }
+    }
+  })
 
   .mutation('create-account', {
     input: z.object({
@@ -226,7 +249,7 @@ export const sendgridRouter = createRouter()
         }
         //TODO add request params and conditional email templates
         await ctx.sendgrid.send(contact)
-        return true;
+        return { result: true };
       } catch (err) {
         return { result: false }
       }
