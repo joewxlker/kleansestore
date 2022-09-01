@@ -1,5 +1,6 @@
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 import { FC, useCallback, useContext, useEffect, useState } from "react"
 import { CartContext, client } from "../pages/_app";
 import { handleCartUpdates, ProductData } from "./products";
@@ -8,7 +9,7 @@ interface CartProps {
     onCloseCart: () => void
 };
 
-export const Cart: FC<CartProps> = ({ onCloseCart }): JSX.Element => {
+export const Cart: FC<CartProps> = (): JSX.Element => {
 
     const [items, setItems] = useState<Array<ProductData | undefined>>();
     //@ts-ignore
@@ -19,6 +20,22 @@ export const Cart: FC<CartProps> = ({ onCloseCart }): JSX.Element => {
     useEffect(() => {
         handleCartClientData();
     }, [])
+
+
+
+    const handleQuantities = (item: ProductData | undefined, incDec: boolean) => {
+        if (item === undefined) return
+        if (items) {
+            const index = items.findIndex((x: ProductData | undefined) => { return x?.default_price === item.default_price });
+            // finds index of value to be updated
+            if (incDec) {
+                items.splice(index, 1, { ...item, quantity: item.quantity++ })
+                return items
+            }
+            items.splice(index, 1, { ...item, quantity: item.quantity++ })
+            return items
+        }
+    }
 
     const handleCartClientData = async () => {
         setLoading(true)
@@ -45,10 +62,6 @@ export const Cart: FC<CartProps> = ({ onCloseCart }): JSX.Element => {
         else return false
     }
 
-    const handleCallback = useCallback(() => {
-        onCloseCart()
-    }, [onCloseCart])
-
     if (loading) return (
         <div className='h-full w-full flex justify-center items-center'>
         </div>
@@ -63,40 +76,45 @@ export const Cart: FC<CartProps> = ({ onCloseCart }): JSX.Element => {
 
     return (
         <>
-            {items !== undefined && items !== null && <div className='w-full flex flex-col justify-center items-center'>
-                {
-                    items.map((data) => {
-                        return (
-                            <div key={data?.name} id='hardfadein' className='w-full flex flex-row items-center justify-between'>
-                                <p className='text-grey'>{data?.name}</p>
-                                {data?.image !== undefined && <Image src={data?.image} height={90} width={90} />}
-                                <span className='flex w-1/2 flex-col justify-center items-center'>
-                                    <div className='flex w-4/6 flex-col jusitfy-center items-center'>
-                                        <button className='w-full bg-salmon'>+</button>
-                                        <h3>{data?.quantity}</h3>
-                                        <button className='w-full bg-salmon'>-</button>
-                                    </div>
+            <div className='w-full flex flex-col justify-center items-center h-full z-10 bg-white'>
+                <div className='overflow-y-scroll' style={{ maxHeight: '20vh' }}>
+                    {items !== undefined && items !== null &&
+                        items.map((data) => {
+                            return (
+                                <div key={data?.name} id='hardfadein' className='p-2 w-full flex flex-row items-center justify-between'>
+                                    <p className='text-grey'>{data?.name}</p>
+                                    {data?.image !== undefined && <Image alt={`kleanse product ${data.name}`} src={data?.image} height={90} width={90} />}
+                                    <span className='flex w-1/2 flex-row justify-center items-center'>
+                                        <div className='flex w-4/6 flex-col jusitfy-center items-center'>
+                                            <button className='w-8 h-8 bg-salmon'
+                                                onClick={e => setItems(handleQuantities(data, true))}
+                                                style={{ borderRadius: '25px' }}>+</button>
+                                            <h3>{data?.quantity}</h3>
+                                            <button className='w-8 h-8 bg-salmon'
+                                                onClick={e => setItems(handleQuantities(data, false))}
+                                                style={{ borderRadius: '25px' }}>-</button>
+                                        </div>
+                                        <button
+                                            className="h-16 w-16 text-grey rounded m-2"
+                                            onClick={e => {
+                                                //@ts-ignore
+                                                handleCartUpdates(data, session, false, null);
+                                                handleCartClientData()
+                                            }
+                                            }>X</button>
+                                    </span>
+                                </div>
+                            )
+                        }
 
-                                    <button
-                                        className="h-full w-full text-white bg-grey"
-                                        onClick={e => {
-                                            //@ts-ignore
-                                            handleCartUpdates(data, session, false, null);
-                                            handleCartClientData()
-                                        }
-                                        }>X</button>
-                                </span>
-                            </div>
-                        )
-                    }
-
-                    )}
-                {items.length !== 0 && <button className='mt-5 px-3 py-2 bg-white' onClick={e => {
-                    window.localStorage.clear();
-                    setItems([]);
-                    handleCallback();
-                }}>Clear cart</button>}
-            </div>}
+                        )}
+                </div>
+                {items?.length !== 0 && <Link
+                    href='/stripe/checkout'
+                ><a><button className='mt-5 px-3 py-2 bg-white' onClick={e => {
+                }}>Checkout</button></a></Link>}
+            </div>
+            {/* <div className='bg-grey w-screen h-screen fixed top-0 left-0' onMouseEnter={e => handleCartUpdates(items, session, false, null)}></div> */}
         </>
     )
 }
