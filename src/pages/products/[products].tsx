@@ -1,4 +1,4 @@
-import { GetStaticPaths, GetStaticProps } from "next";
+import { GetServerSideProps, GetStaticPaths, GetStaticProps } from "next";
 import { FC, useState } from "react";
 import Layout from "../../components/layout";
 import Products, { ProductData } from "../../components/products";
@@ -9,19 +9,12 @@ interface ProductsProps {
     params: string;
 }
 
-export const getStaticProps: GetStaticProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
     const req = await fetch('http://localhost:3000/api/stripe');
     //TODO convert to useQuery
     const products = await req.json();
     const params = context.params?.products
     return { props: { products, params } }
-}
-
-export const getStaticPaths: GetStaticPaths = async () => {
-    return {
-        paths: [{ params: { products: 'all-products' } }],
-        fallback: false
-    }
 }
 
 const ProductsPage: FC<ProductsProps> = (props) => {
