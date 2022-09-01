@@ -5,6 +5,7 @@ import { FC, useCallback, useContext, useEffect, useState } from "react";
 import Stripe from "stripe";
 import { CartContext, client } from "../pages/_app";
 import { inferQueryOutput } from "../utils/trpc";
+import { Layover } from "./layover";
 
 interface ShopProps {
     products?: inferQueryOutput<'stripe.all-products'>, params: string;
@@ -42,17 +43,16 @@ const Products: FC<ShopProps> = (props): JSX.Element => {
         const filtered = cartItems.filter((x: ProductData) => x.default_price === item.default_price);
         if (filtered.length === 0) setCartItems([...cartItems, item]);
         //TODO fix - setContext callback in overlay updates cart, products doesnt update cart
-        console.log(cartItems)
     }
 
     return (
         <>
             <div className='z-1 relative w-full flex flex-col items-center justify-start'>
                 <h1 className='text-center p-5 text-2xl'>{props.params}</h1>
-                <div className='w-2/3 h-full flex flex-row flex-wrap'>{props.products?.map((data) => {
+                <div className='lg:w-2/3 w-full h-full flex flex-row lg:justify-start justify-center flex-wrap'>{props.products?.map((data) => {
                     return (
-                        <>
-                            {data.metadata.category !== props.params && <div key={data.name} className='w-80 m-6 flex flex-col bg-white'>
+                        <div key={data.name}>
+                            {data.metadata.category !== props.params && <div key={data.name} className='w-80 m-6 flex flex-col bg-white items-center'>
                                 <button className='w-full hover:blur cursor-pointer' onClick={e => {
                                     handleClick({
                                         images: data.images,
@@ -67,10 +67,10 @@ const Products: FC<ShopProps> = (props): JSX.Element => {
                                 }
                                 }
                                 >
-                                    <Image alt='' src={data.images[0]!} height={350} width={400} />
+                                    <Image alt={`kleanse product ${data.name}`} src={data.images[0]!} height={350} width={400} />
                                 </button>
-                                <h2>{data.name}</h2>
-                                {data.unit_amount! / 100}
+                                {/* <h2>{data.name}</h2>
+                                {data.unit_amount! / 100} */}
                                 <AddToCartButton
                                     data={{
                                         images: data.images,
@@ -83,7 +83,7 @@ const Products: FC<ShopProps> = (props): JSX.Element => {
                                     onSetContext={item => setContext(item)}
                                     session={session} />
                             </div>}
-                        </>
+                        </div>
                     )
                     // renders static data ( stripe product data) to elements 
                 })}</div>
@@ -117,50 +117,55 @@ export const ProductOverlay: FC<ProductOverlayProps> = ({ onCloseOverlay, data, 
 
     return (
         <>
-            <div id='fadein' className='fixed top-0 w-screen h-screen flex items-center justify-center' style={{ zIndex: '110', height: '100vh' }}>
-                <div className='w-4/6 bg-white shadow-xl' style={{ height: '60%' }}>
-
+            <Layover>
+                <div className='flex flex-col'>
                     <div className='h-20 w-full bg-grey flex justify-end'>
-                        <button className='h-full w-2/6 bg-white' onClick={e => callBack()}>X</button>
+                        <button className='w-2/6 bg-grey flex justify-center items-center p-auto text-white' onClick={e => callBack()}>X</button>
                     </div>
 
-                    <div className='flex flex-col justify-center h-full' style={{ height: '80%' }}>
-
-                        <div className='z-1 relative h-full flex flex-row'>
-
-                            <div key={data.name} className='w-4/6 flex flex-row' style={{ height: 'fit-content' }}>
+                    <div className='flex flex-col justify-center items-center w-full h-full'>
+                        <div className='z-1 relative h-full flex lg:flex-row md:flex-row flex-col w-full'>
+                            <div key={data.name} className='w-full flex lg:flex-row md:flex-row flex-col flex-wrap' style={{ height: 'fit-content' }}>
                                 <div className='h-full w-full flex flex-col justify-start'>
-                                    <div className='w-full h-full'>
-                                        <Image alt='' src={data.images[0]!} height={390} width={800} objectFit={'cover'} />
+                                    <div className='w-full flex lg:flex-row md:flex-row flex-col'>
+                                        <div className='w-full h-full md:w-full'>
+                                            <Image alt={`kleanse product ${data.name}`} src={data.images[0]!} height={390} width={800} objectFit={'cover'} />
+                                        </div>
+                                        <div className='lg:w-1/6 md:w-1/6 w-full  h-4/6 flex lg:flex-col md:flex-col flex-row justify-center items-center'>
+                                            <div className='h-1/3 w-full'>
+                                                <Image alt={`kleanse product ${data.name}`} src={data.images[0]!} height={122.4} width={130} objectFit={'cover'} />
+                                            </div>
+                                            <div className='h-1/3 w-full'>
+                                                <Image alt={`kleanse product ${data.name}`} src={data.images[0]!} height={122.4} width={130} objectFit={'cover'} />
+                                            </div>
+                                            <div className='h-1/3 w-full'>
+                                                <Image alt={`kleanse product ${data.name}`} src={data.images[0]!} height={122.4} width={130} objectFit={'cover'} />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className='h-1/6 flex flex-col text-grey'>
+                                    <div className='lg:w-5/6 md:w-full w-full bg-white lg:p-8 md:p-8 p-2 flex flex-col' style={{ height: '80%' }}>
+                                        <h1 className="text-grey">{data.description}</h1>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col lg:w-2/6 md:w-full w-full">
+                                    <div className='lg:w-5/6 md:w-full p-3 w-full flex flex-col text-grey'>
                                         <h2>{data.name}</h2>
                                         {data.unit_amount}
                                     </div>
-                                </div>
-                                <div className='w-1/6 h-4/6 flex flex-col items-center'>
-                                    <div className='h-1/3 w-full'>
-                                        <Image alt='' src={data.images[0]!} height={122.4} width={130} objectFit={'cover'} />
-                                    </div>
-                                    <div className='h-1/3 w-full'>
-                                        <Image alt='' src={data.images[0]!} height={122.4} width={130} objectFit={'cover'} />
-                                    </div>
-                                    <div className='h-1/3 w-full'>
-                                        <Image alt='' src={data.images[0]!} height={122.4} width={130} objectFit={'cover'} />
-                                    </div>
+
+
+
                                 </div>
                             </div>
                             {/* images */}
 
-                            <div className='w-2/6 bg-white p-8 flex flex-col' style={{ height: '80%' }}>
-                                <h1 className="text-grey">{data.description}</h1>
-                            </div>
                         </div>
-                        <AddToCartButton data={data} onSetContext={onSetContext} session={session} />
+                        <span className='lg:w-1/6 md:w-1/6 w-5/6'><AddToCartButton data={data} onSetContext={onSetContext} session={session} /></span>
                     </div>
                 </div>
-            </div>
-            <div id='hardfadein' className='h-full fixed top-0 w-full' style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: '100' }} />
+            </Layover>
+
         </>
     )
 }
@@ -180,7 +185,7 @@ const AddToCartButton: FC<AddToCartButtonProps> = ({ onSetContext, data, session
 
     return (
         <button
-            className=''
+            className='shadow w-full flex flex-row justify-center items-center p-2'
             onClick={e => {
                 if (data.default_price === undefined || data.default_price === null) return;
                 const images = data.images[0] !== undefined ? data.images[0] : '';
@@ -197,14 +202,20 @@ const AddToCartButton: FC<AddToCartButtonProps> = ({ onSetContext, data, session
                 };
                 handleCartUpdates(item, session, true, null).then((cart) => {
                     onCallback(item);
-                    console.log(cart)
                 });
             }
             }
             disabled={
                 data.default_price === undefined || data.default_price === null
             }
-        >Add to cart</button>
+        >
+            <span className='w-full h-full flex flex-row justify-center items-center'>
+                <p className="w-4/6">Add to cart</p>
+                <span className='h-full w-2/6'>
+                    <Image alt='kleanse' src='/images/kleanse-logos/kleanse-wing.svg' height={40} width={40} />
+                </span>
+            </span>
+        </button>
     )
 }
 
