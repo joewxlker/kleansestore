@@ -1,41 +1,47 @@
+import Image from "next/image";
+import Link from "next/link";
 import { FC, FormEvent, useCallback, useEffect, useState } from "react";
-import { object } from "zod";
-import useSetForm, { ContactForm, FormType, LoginForm, SignUpForm } from "../hooks/SetForm";
+import useSetForm, { CheckoutForm, ContactForm, Email, FormType, JobApplicationForm, LoginForm, SignUpForm } from "../hooks/SetForm";
+import { CheckoutWithoutSessionForm, CheckoutWithSessionForm } from "../pages/stripe/checkout";
 import { dateData } from "../utils/siteInfo";
+import { Login } from "./login";
 
 interface FormProps {
-    formData: SignUpForm | LoginForm | ContactForm
-    onResponse: (data: any) => Promise<void> | void;
+    formData: SignUpForm | LoginForm | ContactForm | Email | CheckoutWithSessionForm | CheckoutWithoutSessionForm | JobApplicationForm
+    onResponse: (data: any) => Promise<JSX.Element | null>;
     buttons: Array<'day' | 'month' | 'year'> | [];
 };
 
 export const Form: FC<FormProps> = ({ buttons, onResponse, formData }): JSX.Element => {
 
     const [form, setForm] = useSetForm(formData);
+    const [input, setInput] = useState(false);
     const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<JSX.Element | null>();
 
-    const handleCallback = useCallback((data: FormType<SignUpForm | LoginForm | ContactForm>) => {
-        onResponse(data)
+    const handleCallback = useCallback(async (data: FormType<SignUpForm | LoginForm | CheckoutForm | ContactForm | Email | JobApplicationForm>) => {
+        setLoading(true);
+        const res = await onResponse(data);
+        setLoading(false)
+        setError(res);
     }, [onResponse])
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-        console.log(form)
-        event.preventDefault()
-        setLoading(true)
-
-        //@ts-ignore
-        if (form['hidden'] !== '') return;
-        const emptyCheck = Object.values(form).map(e => { return e === '' });
-        const filtered = emptyCheck.filter((x) => x === true);
-        if ((Object.values(formData).length + Object.values(buttons).length) != Object.entries(form).length || filtered.length > 1)
-            return setLoading(false);
-        /** -1 here to remove hidden input value from equation, 
-        * checks length of properties passed to component matches form input length.
-        */
-        handleCallback(form)
-
-        //TODO fix infered output typing from tRPC
+        event.preventDefault();
+        if (!input) return
+        // @ts-ignore
+        handleCallback(form);
     }
+
+    useEffect(() => {
+        // @ts-ignore
+        if (form['hidden'] !== '') return setInput(false);
+        const text = Object.values(form).filter(e => e === '');
+        //  @ts-ignore
+        const button = buttons.filter((x) => form[x] === undefined);
+        return setInput(text.length === 1 && button.length === 0);
+    }, [form, setForm])
+
 
     return (
         <div className='h-1/2'>
@@ -52,25 +58,33 @@ export const Form: FC<FormProps> = ({ buttons, onResponse, formData }): JSX.Elem
                                 name={types}
                                 // @ts-ignore
                                 value={form[types]}
-                                type={types}
+                                type={types === 'confirm_password' ? 'password' : types}
                                 placeholder={types}
-                                onChange={e => setForm(e, '')} />)
+                                onChange={e => { setForm(e, '') }} />)
                         //renders form text input elements  
                     })}
 
                     {buttons.map((period) => {
                         return (<select className="w-full p-2 m-2" key={period} name={period}>
+
+                            <option value="" disabled selected>{period}</option>
                             {dateData[period].map((value) => {
                                 return (
-                                    //@ts-ignore
-                                    <option key={value} name={value} value={value} onClick={e => { setForm(e, period) }}>{value}</option>
+                                    <>
+                                        <option key={value} value={value} placeholder={period} onClick={(e: any) => { setForm(e, period) }}>{value}</option>
+                                    </>
                                 )
                             })}
                         </select>)
                     })}
                 </div>
-                <button className='bg-grey text-white p-2 px-5' type='submit' disabled={false}> Submit </button>
+                <button className='bg-grey text-white p-2 px-5' type='submit' disabled={!input} style={{ opacity: `${!input ? '50%' : '100%'}` }}> Submit </button>
             </form>
+
+            <div className='w-full justify-center items-center flex flex-col'>
+                {error}
+            </div>
+            {loading && <p>Loading...</p>}
         </div>
     )
 }
