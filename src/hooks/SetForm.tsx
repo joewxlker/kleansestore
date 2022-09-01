@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CheckoutWithSessionForm, CheckoutWithoutSessionForm } from "../pages/stripe/checkout";
 // import { SignUpForm } from "../pages/signup";
 
 export interface SignUpForm {
@@ -6,10 +7,14 @@ export interface SignUpForm {
   lastname: string;
   email: string;
   password: string;
+  confirm_password: string;
   hidden: string;
   day: string;
   month: string;
   year: string;
+}
+
+export interface CheckoutForm extends CheckoutWithSessionForm, CheckoutWithoutSessionForm {
 }
 
 export interface LoginForm {
@@ -24,13 +29,23 @@ export interface ContactForm {
   email: string
 }
 
-export type FormType<T extends SignUpForm | LoginForm | ContactForm> = T
+export interface JobApplicationForm {
+  email: string;
+  subject: string;
+  message: string;
+  phonenumber: string;
+}
 
-const useSetForm = (component: FormType<LoginForm | SignUpForm | ContactForm>) => {
+export interface Email {
+  email: string;
+}
+
+export type FormType<T extends SignUpForm | LoginForm | ContactForm | Email | CheckoutWithSessionForm | CheckoutWithoutSessionForm | JobApplicationForm> = T
+
+const useSetForm = (component: FormType<SignUpForm | LoginForm | ContactForm | Email | CheckoutWithSessionForm | CheckoutWithoutSessionForm | JobApplicationForm>) => {
   // component = object, is either SignupForm or LoginForm
   const [value, setForm] = useState(component);
   return [value, (event: React.ChangeEvent<HTMLInputElement>, argument: string) => {
-    console.log(event.target.name)
     if (event.target.name !== undefined) return setForm((oldValue) => {
       return { ...oldValue, [event.target.name]: event.target.value };
     }); else return setForm((oldValue) => {
