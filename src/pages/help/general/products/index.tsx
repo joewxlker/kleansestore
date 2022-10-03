@@ -1,8 +1,6 @@
 import { NextPage } from "next";
 import Head from "next/head";
-import Image from "next/image";
-import Link from "next/link";
-import { FC, useState } from "react";
+import { useState } from "react";
 import { ContactFormComponent } from "../..";
 import { Layover } from "../../../../components/layover";
 import HelpLayout from "../../layout";

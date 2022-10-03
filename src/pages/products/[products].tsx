@@ -1,7 +1,7 @@
-import { GetServerSideProps, GetStaticPaths, GetStaticProps } from "next";
-import { FC, useState } from "react";
+import { GetServerSideProps } from "next";
+import { FC } from "react";
 import Layout from "../../components/layout";
-import Products, { ProductData } from "../../components/products";
+import Products from "../../components/products";
 import { inferQueryOutput } from "../../utils/trpc";
 
 interface ProductsProps {
@@ -11,15 +11,12 @@ interface ProductsProps {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const req = await fetch('http://localhost:3000/api/stripe');
-    //TODO convert to useQuery
     const products = await req.json();
     const params = context.params?.products
     return { props: { products, params } }
 }
 
 const ProductsPage: FC<ProductsProps> = (props) => {
-
-    const [productData, setProductData] = useState<ProductData | undefined>();
 
     return (
         <Layout>

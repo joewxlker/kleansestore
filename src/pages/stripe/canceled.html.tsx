@@ -1,21 +1,14 @@
 import { NextPage } from "next"
-import { useSession } from "next-auth/react"
 import Head from "next/head"
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
 import Layout from "../../components/layout"
-import { inferQueryOutput } from "../../utils/trpc"
-import { client } from "../_app"
+
 
 const Success: NextPage = (props) => {
 
-    const { data: session } = useSession();
-
     return (
         <>
-
             <Head>
                 <meta name="description" content="" />
             </Head>

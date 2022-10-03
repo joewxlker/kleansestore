@@ -4,7 +4,6 @@ import Link from "next/link";
 import { FC } from "react"
 import { Form } from "../../components/form";
 import Layout from "../../components/layout"
-import { ContactForm, FormType } from "../../hooks/SetForm";
 import { client } from "../_app";
 
 const Contact: FC = ({ }): JSX.Element => {
@@ -71,7 +70,7 @@ export default Contact
 
 export const ContactFormComponent: FC = (): JSX.Element => {
 
-    const handleResponse = async (data: FormType<ContactForm>) => {
+    const handleResponse = async (data: { email: string, firstname: string, message: string, hidden: string }) => {
         const res = await client.mutation('sendgrid.send-email', data);
         if (res.result) {
             return <Success />;

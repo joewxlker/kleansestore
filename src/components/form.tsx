@@ -1,13 +1,9 @@
-import Image from "next/image";
-import Link from "next/link";
-import { FC, FormEvent, useCallback, useEffect, useState } from "react";
-import useSetForm, { CheckoutForm, ContactForm, Email, FormType, JobApplicationForm, LoginForm, SignUpForm } from "../hooks/SetForm";
-import { CheckoutWithoutSessionForm, CheckoutWithSessionForm } from "../pages/stripe/checkout";
+import { FC, useCallback, useEffect, useState } from "react";
+import useSetForm, { FormData } from "../hooks/SetForm";
 import { dateData } from "../utils/siteInfo";
-import { Login } from "./login";
 
 interface FormProps {
-    formData: SignUpForm | LoginForm | ContactForm | Email | CheckoutWithSessionForm | CheckoutWithoutSessionForm | JobApplicationForm
+    formData: FormData;
     onResponse: (data: any) => Promise<JSX.Element | null>;
     buttons: Array<'day' | 'month' | 'year'> | [];
 };
@@ -19,19 +15,12 @@ export const Form: FC<FormProps> = ({ buttons, onResponse, formData }): JSX.Elem
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<JSX.Element | null>();
 
-    const handleCallback = useCallback(async (data: FormType<SignUpForm | LoginForm | CheckoutForm | ContactForm | Email | JobApplicationForm>) => {
+    const handleCallback = useCallback(async () => {
         setLoading(true);
-        const res = await onResponse(data);
+        const res = await onResponse(form);
         setLoading(false)
         setError(res);
     }, [onResponse])
-
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (!input) return
-        // @ts-ignore
-        handleCallback(form);
-    }
 
     useEffect(() => {
         // @ts-ignore
@@ -45,7 +34,7 @@ export const Form: FC<FormProps> = ({ buttons, onResponse, formData }): JSX.Elem
 
     return (
         <div className='h-1/2'>
-            <form className='p-3 flex flex-col w-full justify-center items-center ' onSubmit={handleSubmit}>
+            <form className='p-3 flex flex-col w-full justify-center items-center ' onSubmit={handleCallback}>
                 <div className='w-full'>
 
                     {Object.keys(formData).map((types) => {

@@ -18,10 +18,9 @@ export const Cart: FC<CartProps> = (): JSX.Element => {
     const { data: session } = useSession();
 
     useEffect(() => {
+        console.log('')
         handleCartClientData();
     }, [])
-
-
 
     const handleQuantities = (item: ProductData | undefined, incDec: boolean) => {
         if (item === undefined) return
@@ -29,9 +28,11 @@ export const Cart: FC<CartProps> = (): JSX.Element => {
             const index = items.findIndex((x: ProductData | undefined) => { return x?.default_price === item.default_price });
             // finds index of value to be updated
             if (incDec) {
+                if (item.quantity > 10) return
                 items.splice(index, 1, { ...item, quantity: item.quantity++ })
                 return items
             }
+            if (item.quantity === 1) return
             items.splice(index, 1, { ...item, quantity: item.quantity++ })
             return items
         }
@@ -42,8 +43,7 @@ export const Cart: FC<CartProps> = (): JSX.Element => {
         if (!await getItemsFromDb()) {
             const localCart = window.localStorage.getItem('cart')
             if (localCart !== undefined || localCart !== null) { setLoading(false); return setItems(JSON.parse(localCart!)) }
-            // set items using local storage
-            setLoading(false)
+            // set items using local storage2^49
             return setItems(cartItems);
             // set items using cart context
         }
@@ -87,12 +87,14 @@ export const Cart: FC<CartProps> = (): JSX.Element => {
                                     <span className='flex w-1/2 flex-row justify-center items-center'>
                                         <div className='flex w-4/6 flex-col jusitfy-center items-center'>
                                             <button className='w-8 h-8 bg-salmon'
+                                                disabled={data?.quantity === 10}
                                                 onClick={e => setItems(handleQuantities(data, true))}
-                                                style={{ borderRadius: '25px' }}>+</button>
+                                                style={{ borderRadius: '25px', opacity: `${data?.quantity === 10 ? '50%' : '100%'}` }}>+</button>
                                             <h3>{data?.quantity}</h3>
                                             <button className='w-8 h-8 bg-salmon'
+                                                disabled={data?.quantity === 1}
                                                 onClick={e => setItems(handleQuantities(data, false))}
-                                                style={{ borderRadius: '25px' }}>-</button>
+                                                style={{ borderRadius: '25px', opacity: `${data?.quantity === 1 ? '50%' : '100%'}` }}>-</button>
                                         </div>
                                         <button
                                             className="h-16 w-16 text-grey rounded m-2"

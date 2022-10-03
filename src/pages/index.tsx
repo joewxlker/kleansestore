@@ -1,6 +1,6 @@
-import type { GetServerSideProps, GetStaticProps, NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import Layout from "../components/layout";
 import { useIncrementData } from "../hooks/useIntervals";
 import { cards, images } from "../utils/siteInfo";

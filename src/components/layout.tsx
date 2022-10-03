@@ -3,7 +3,7 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { FC, useCallback, useState } from "react";
-import { ContactForm, FormType } from "../hooks/SetForm";
+import { FormData } from "../hooks/SetForm";
 import { client } from "../pages/_app";
 import { Cart } from "./cart";
 import { Form } from "./form";
@@ -228,7 +228,7 @@ export const Footer: FC<FooterProps> = (): JSX.Element => {
 
     const [success, setSuccess] = useState(false)
 
-    const handleResponse = async (data: FormType<ContactForm>) => {
+    const handleResponse = async (data: FormData) => {
         const res = await client.mutation('mongo.add-maillist', { email: data.email })
         setSuccess(res.result === 'ADDED_MAILLIST')
         // window.location.reload();

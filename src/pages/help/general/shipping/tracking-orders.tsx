@@ -1,8 +1,6 @@
 import { NextPage } from "next";
 import Head from "next/head";
-import Image from "next/image";
-import Link from "next/link";
-import { FC, useEffect } from "react";
+import { useEffect } from "react";
 import HelpLayout from "../../layout";
 
 const TrackingOrders: NextPage = () => {

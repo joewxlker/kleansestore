@@ -52,7 +52,7 @@ const Products: FC<ShopProps> = (props): JSX.Element => {
                 <div className='lg:w-2/3 w-full h-full flex flex-row lg:justify-start justify-center flex-wrap'>{props.products?.map((data) => {
                     return (
                         <div key={data.name}>
-                            {data.metadata.category !== props.params && <div key={data.name} className='w-80 m-6 flex flex-col bg-white items-center'>
+                            {data.metadata.category !== props.params && <div className='w-80 m-6 flex flex-col bg-white items-center'>
                                 <button className='w-full hover:blur cursor-pointer' onClick={e => {
                                     handleClick({
                                         images: data.images,

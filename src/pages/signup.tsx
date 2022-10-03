@@ -5,14 +5,14 @@ import { FC, useEffect } from "react"
 import { Form } from "../components/form"
 import Layout from "../components/layout"
 import { Login } from "../components/login";
-import { FormType, SignUpForm } from "../hooks/SetForm";
+import { FormData } from "../hooks/SetForm";
 import { client } from "./_app";
 
 interface SignupProps { };
 
 const Signup: FC<SignupProps> = ({ }): JSX.Element => {
 
-    const handleRequest = async (data: FormType<SignUpForm>) => {
+    const handleRequest = async (data: { firstname: string; lastname: string; email: string; password: string; confirm_password: string; day: string; month: string; year: string; hidden: string }) => {
         if (data.password !== data.confirm_password) {
             return <PasswordError />
         }
@@ -41,29 +41,19 @@ const Signup: FC<SignupProps> = ({ }): JSX.Element => {
             </div>)
     }
 
-    type SuccessProps = { data: FormType<SignUpForm> }
+    type SuccessProps = { data: FormData }
 
     const Success: FC<SuccessProps> = ({ data }): JSX.Element => {
 
         useEffect(() => {
-            const handleRequest = async () => {
-                const res = await client.mutation('mongo.login', { email: data.email, password: data.password });
-                if (res.result) {
-                    handleSuccess(data.email);
-                }
-            }
-            handleRequest();
-            const handleSuccess = async (email: string) => {
-                signIn().then((data) => {
-                })
-                // login binds session to document which can then be used to access document without user input
-            }
-        })
+            signIn()
+        }, [])
 
         return (
             <p></p>
         )
     }
+
     const PasswordError: FC = (): JSX.Element => {
 
         return (

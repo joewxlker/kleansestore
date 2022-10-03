@@ -1,9 +1,6 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import { FC, useState } from "react";
-import { FormType, LoginForm } from "../hooks/SetForm";
-import { client } from "../pages/_app";
-import { Form } from "./form";
+import { FC } from "react";
 
 interface LoginProps { }
 export const Login: FC<LoginProps> = ({ }): JSX.Element => {
@@ -14,7 +11,7 @@ export const Login: FC<LoginProps> = ({ }): JSX.Element => {
         return (
             <div className='h-1/2 w-full flex flex-col justify-evenly items-center'>
                 <h1 className='text-white'> Welcome back {session.user?.email}</h1>
-                <button onClick={e => signOut()} className='px-3 py-2 bg-white'>Log out</button>
+                <button onClick={e => signOut()} className='px-3 py-2 bg-white'>LOGOUT</button>
             </div>
         )
     }

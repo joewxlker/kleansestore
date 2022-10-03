@@ -1,10 +1,8 @@
 import { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
-import Image from "next/image";
-import { FC, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Form } from "../../../components/form";
 import { Layover } from "../../../components/layover";
-import { client } from "../../_app";
 import HelpLayout from "../layout";
 
 interface Params {

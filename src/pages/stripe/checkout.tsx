@@ -6,6 +6,7 @@ import { client } from '../_app';
 import Head from 'next/head';
 import { ProductData } from '../../components/products';
 import Layout from '../../components/layout';
+import { inferQueryOutput } from '../../utils/trpc';
 
 const Checkout: NextPage = (): JSX.Element => {
 
@@ -21,7 +22,7 @@ const Checkout: NextPage = (): JSX.Element => {
         const fetchItems = async () => {
             if (session) {
                 if (session.user?.email === undefined || session.user?.email === null) return
-                const data = await client.query('mongo.mongo-carts', { email: session.user.email });
+                const data: inferQueryOutput<'mongo.mongo-carts'> = await client.query('mongo.mongo-carts', { email: session.user.email });
                 return setItems(data?.cart);
             }
             setItems(JSON.parse(window.localStorage.getItem('cart')!))
