@@ -12,7 +12,10 @@ interface SignupProps { };
 
 const Signup: FC<SignupProps> = ({ }): JSX.Element => {
 
-    const handleRequest = async (data: { firstname: string; lastname: string; email: string; password: string; confirm_password: string; day: string; month: string; year: string; hidden: string }) => {
+    type SignupData = { firstname: string; lastname: string; email: string; password: string; confirm_password: string; day: string; month: string; year: string; hidden: string }
+
+    const handleRequest = async (data: SignupData) => {
+        console.log(data)
         if (data.password !== data.confirm_password) {
             return <PasswordError />
         }
@@ -23,7 +26,7 @@ const Signup: FC<SignupProps> = ({ }): JSX.Element => {
 
     const Exists: FC = (): JSX.Element => {
         return (
-            <div className='fixed top-0 left-0 flex w-screen h-screen fixed z-10 flex-col justify-center items-center'
+            <div className='fixed top-0 left-0 flex w-screen h-screen z-10 flex-col justify-center items-center'
                 style={{ backgroundColor: 'rgba(0,0,0,0.5)', }}>
                 <div className="h-1/2 w-1/2 flex flex-col items-center justify-center bg-grey text-white">
                     <span className="h-1/6 w-full flex flex-col justify-evenly items-center">

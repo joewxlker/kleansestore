@@ -101,7 +101,7 @@ export const Slider: FC<SliderProps> = (): JSX.Element => {
         {/* image slider text/button container */}
         {/* setIncrement custom hook increments image slider data object */}
 
-        <div className='h-8 w-screen relative bottom-0 z-10 -translate-y-10 flex flex-row justify-center items-center lg:flex hidden' style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
+        <div className='h-8 w-screen relative bottom-0 z-10 -translate-y-10 flex-row justify-center items-center lg:flex hidden' style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
           {images.map(({ id }) => {
             return (
               <button key={id} className='h-4 w-4 bg-white m-2 hover:bg-grey hover:border border-black border-1'

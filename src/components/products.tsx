@@ -1,9 +1,7 @@
-import { Session } from "next-auth";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { FC, useCallback, useContext, useEffect, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import Stripe from "stripe";
-import { CartContext, client } from "../pages/_app";
+import { useAddCart } from "../hooks/addToCart";
 import { inferQueryOutput } from "../utils/trpc";
 import { Layover } from "./layover";
 
@@ -23,26 +21,13 @@ export interface RawProductData {
 
 const Products: FC<ShopProps> = (props): JSX.Element => {
 
-    const { data: session } = useSession()
-
     const [overlay, openOverlay] = useState(false);
     const [productData, setProductData] = useState<RawProductData>({ images: [''], default_price: '', name: '', unit_amount: 0, quantity: 0, description: '' });
-    //@ts-ignore
-    const [cartItems, setCartItems] = useContext(CartContext);
 
     const handleClick = (data: RawProductData) => {
         // react component functions use raw product data
         setProductData(data);
         productData !== undefined && openOverlay(true);
-    }
-
-    const setContext = (item: ProductData) => {
-        // react callback functions use refined product data
-        // if (session) return
-        if (cartItems === undefined) return setCartItems([item]);
-        const filtered = cartItems.filter((x: ProductData) => x.default_price === item.default_price);
-        if (filtered.length === 0) setCartItems([...cartItems, item]);
-        //TODO fix - setContext callback in overlay updates cart, products doesnt update cart
     }
 
     return (
@@ -79,16 +64,14 @@ const Products: FC<ShopProps> = (props): JSX.Element => {
                                         unit_amount: data.unit_amount,
                                         quantity: 1,
                                         description: data.description,
-                                    }}
-                                    onSetContext={item => setContext(item)}
-                                    session={session} />
+                                    }} />
                             </div>}
                         </div>
                     )
                     // renders static data ( stripe product data) to elements 
                 })}</div>
             </div>
-            {overlay && <ProductOverlay onCloseOverlay={() => openOverlay(false)} data={productData} onSetContext={item => setContext(item)} />}
+            {overlay && <ProductOverlay onCloseOverlay={() => openOverlay(false)} data={productData} />}
         </>
     );
 }
@@ -105,11 +88,8 @@ export interface ProductData {
 interface ProductOverlayProps {
     onCloseOverlay: () => void;
     data: RawProductData;
-    onSetContext: (item: ProductData) => void;
 }
-export const ProductOverlay: FC<ProductOverlayProps> = ({ onCloseOverlay, data, onSetContext }): JSX.Element => {
-
-    const { data: session } = useSession()
+export const ProductOverlay: FC<ProductOverlayProps> = ({ onCloseOverlay, data }): JSX.Element => {
 
     const callBack = useCallback(() => {
         onCloseOverlay()
@@ -161,7 +141,7 @@ export const ProductOverlay: FC<ProductOverlayProps> = ({ onCloseOverlay, data, 
                             {/* images */}
 
                         </div>
-                        <span className='lg:w-1/6 md:w-1/6 w-5/6'><AddToCartButton data={data} onSetContext={onSetContext} session={session} /></span>
+                        <span className='lg:w-1/6 md:w-1/6 w-5/6'><AddToCartButton data={data} /></span>
                     </div>
                 </div>
             </Layover>
@@ -172,43 +152,32 @@ export const ProductOverlay: FC<ProductOverlayProps> = ({ onCloseOverlay, data, 
 
 
 interface AddToCartButtonProps {
-    onSetContext: (item: ProductData) => void;
     data: RawProductData;
-    session: null | Session;
 }
 
-const AddToCartButton: FC<AddToCartButtonProps> = ({ onSetContext, data, session }): JSX.Element => {
+const AddToCartButton: FC<AddToCartButtonProps> = ({ data }): JSX.Element => {
 
-    const onCallback = useCallback((item: ProductData) => {
-        onSetContext(item)
-    }, [])
+    const addItem = useAddCart()
+
+    const handleClick = () => {
+        if (!data.default_price) return;
+        const item = {
+            image: data.images[0] ? data.images[0] : '',
+            name: data.name,
+            amount: data.unit_amount ? data.unit_amount : 0,
+            default_price: JSON.stringify(data.default_price),
+            quantity: 1
+        };
+        addItem(item)
+    }
 
     return (
         <button
             className='shadow w-full flex flex-row justify-center items-center p-2'
-            onClick={e => {
-                if (data.default_price === undefined || data.default_price === null) return;
-                const images = data.images[0] !== undefined ? data.images[0] : '';
-                const amount = data.unit_amount !== undefined ? data.unit_amount : 0;
-                const finalAmount = amount !== null ? amount : 0;
-                // if no image url provided sets image to empty string
-                // if no unit_amount provided, sets unit amount to 0 on client side
-                const item = {
-                    image: images,
-                    name: data.name,
-                    amount: finalAmount,
-                    default_price: JSON.stringify(data.default_price),
-                    quantity: 1
-                };
-                handleCartUpdates(item, session, true, null).then((cart) => {
-                    onCallback(item);
-                });
-            }
-            }
+            onClick={e => handleClick()}
             disabled={
                 data.default_price === undefined || data.default_price === null
-            }
-        >
+            }>
             <span className='w-full h-full flex flex-row justify-center items-center'>
                 <p className="w-4/6">Add to cart</p>
                 <span className='h-full w-2/6'>
@@ -219,34 +188,9 @@ const AddToCartButton: FC<AddToCartButtonProps> = ({ onSetContext, data, session
     )
 }
 
-export const handleCartUpdates = async (item: ProductData, session: Session | null, insert: boolean, clear: null | boolean) => {
-
-    if (session) {
-        //TODO session.email.use possibly undefined
-        //@ts-ignore
-        const res = await client.mutation('mongo.mongo-carts', { email: session.user?.email, item: item, options: { insert: insert, clear: clear } });
-        if (res !== false) {
-            return res
-        }
-        return false
-    }
-    return setLocalStorage(item)
-
-    //sends cart data to db if sesison detected, else uses local storage
+export const setLocalStorage = (data: Array<ProductData>) => {
+    window.localStorage.clear();
+    window.localStorage.setItem('cart', JSON.stringify(data))
 }
 
-export const setLocalStorage = (data: ProductData) => {
-
-    const localCart = window.localStorage.getItem('cart');
-    if (localCart !== null) {
-        const filtered = JSON.parse(localCart).filter((x: ProductData) => x.default_price === data.default_price);
-        if (filtered.length !== 0) return
-        window.localStorage.setItem('cart', JSON.stringify([...JSON.parse(localCart), data]));
-        return
-    }
-    else return window.localStorage.setItem('cart', JSON.stringify([data]));
-
-    // checks storage against input data and inserts data into array if no duplicates, else inserts new json array  
-
-}
 

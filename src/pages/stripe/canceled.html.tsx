@@ -20,7 +20,7 @@ const Success: NextPage = (props) => {
                     <div className='h-80 my-20 w-1/2 flex flex-col items-center justify-evenly'>
                         <h1>YOUR ORDER HAS BEEN CANCELED</h1>
                         <Link href='/' ><button className="bg-grey px-3 py-2 text-white">Return to shopping</button></Link>
-                        <Link href='/checkout' ><button className="bg-grey px-3 py-2 text-white">Return to checkout</button></Link>
+                        <Link href='/stripe/checkout' ><button className="bg-grey px-3 py-2 text-white">Return to checkout</button></Link>
                     </div>
                 </div>
             </Layout>

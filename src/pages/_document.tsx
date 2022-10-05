@@ -3,6 +3,7 @@ import Document, { Html, Main, NextScript, Head } from "next/document";
 import Script from "next/script";
 import { generateNonce } from "../utils/generateCsp";
 import generateCSP from "../utils/generateCsp";
+import { client } from "./_app";
 
 interface DocumentProps {
     nonce: string;

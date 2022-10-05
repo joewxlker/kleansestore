@@ -15,19 +15,21 @@ export const mongoDbRouter = createRouter()
 
       //email , password
       await ctx.mongo.connect();
+
       try {
         const login = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
+        await ctx.mongo.close();
         if (login === null) return { result: false }
         //queries db for matching email and returns false if none found
 
         const compare = await bcrypt.compare(input.password, login.password);
         if (!compare) return { result: false }
         // compares hash stored in db with users password input
-
         return { result: true }
         // return true, nextauth handles signin
       }
       catch (err) {
+        await ctx.mongo.close();
         return { result: false }
       }
     }
@@ -38,8 +40,10 @@ export const mongoDbRouter = createRouter()
       email: z.string(),
     }),
     async resolve({ ctx, input }) {
+      await ctx.mongo.connect();
       const exists = await ctx.mongo.db('onlinestore').collection('mail_list').findOne({ email: input.email });
       const res = exists !== null ? null : await ctx.mongo.db('onlinestore').collection('mail_list').insertOne({ email: input.email });
+      await ctx.mongo.close();
       if (res === null) return { result: 'EMAIL_EXISTS' };
       return { result: 'ADDED_MAILLIST' };
     }
@@ -57,11 +61,13 @@ export const mongoDbRouter = createRouter()
     }),
 
     async resolve({ ctx, input }) {
+
       await ctx.mongo.connect();
       //establish mongo db connection
 
       const login = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
       // login querries db for document containing query - { email : input.email }
+      await ctx.mongo.close();
       if (login !== null) return { result: 'ACCOUNT_EXISTS' }
       // login = mongo db documument |  null
       const createHash = async (password: string) => {
@@ -74,6 +80,7 @@ export const mongoDbRouter = createRouter()
       await ctx.mongo.db('onlinestore').collection('user_data').insertOne(mongouser);
       // inserts new user to DB
       await ctx.stripe.customers.create({ email: input.email });
+      await ctx.mongo.close();
       // creates stripe customer account using input email
       // await ctx.sendgrid.send(
       //   {
@@ -94,57 +101,24 @@ export const mongoDbRouter = createRouter()
 
     input: z.object({
       email: z.string(),
-      item: z.object({
+      item: z.array(z.object({
         image: z.string(),
         default_price: string(),
         quantity: z.number(),
         name: z.string(),
         amount: z.number(),
-      }),
-      options: z.object({
-        insert: z.boolean(),
-        clear: z.boolean().nullish()
-      }),
+      })),
     }),
 
     async resolve({ ctx, input }) {
       await ctx.mongo.connect();
-
-      //TODO if item exists in DB, update quantity
       const user = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
-
-      if (user !== null && (user.cart === undefined || user.cart.length === 0)) {
-        // cart is either undefined or empty array | creates cart array or adds item to empty array
-        console.log('cart is empty or undefined')
-        await ctx.mongo.db('onlinestore').collection('user_data').updateOne({ email: input.email }, { $set: { cart: [input.item] } })
-        const updatedCart = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
-        return updatedCart?.cart
+      if (user !== null) {
+        const res = await ctx.mongo.db('onlinestore').collection('user_data').updateOne({ email: input.email }, { $set: { cart: input.item } });
+        console.log(res)
+        return true
       }
-
-      const filtered = user?.cart.filter((x: typeof input.item) => x?.default_price === input.item?.default_price);
-
-      if (user !== null && filtered.length === 0 && input.options.insert && input.options.clear === null) {
-        // item doesnt exist in db and insert = true | inserts item into cart array in database
-        console.log('inserting new item to db')
-        await ctx.mongo.db('onlinestore').collection('user_data').updateOne({ email: input.email }, { $set: { cart: [...user.cart, input.item] } })
-        const updatedCart = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
-        return updatedCart?.cart
-
-      } else if (user !== null && !input.options.insert && !input.options.clear && filtered.length > 0) {
-        // user and item exist in db, insert false | removes item from database
-        // TODO update quantity
-
-        console.log('removing item from database')
-        const index = user.cart.findIndex((x: typeof input.item) => { return x.default_price === input.item.default_price; })
-        // finds index of input object in db
-
-        user.cart.splice(index, 1);
-        await ctx.mongo.db('onlinestore').collection('user_data').updateOne({ email: input.email }, { $set: { cart: user.cart } })
-        const updatedCart = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
-        return updatedCart?.cart
-      }
-      console.log('no conditions met')
-      return false
+      await ctx.mongo.close();
     }
   })
 
@@ -153,8 +127,11 @@ export const mongoDbRouter = createRouter()
       email: z.string()
     }),
     async resolve({ ctx, input }) {
+      await ctx.mongo.connect();
       const cart: any = await ctx.mongo.db('onlinestore').collection('user_data').findOne({ email: input.email });
-      return cart
+      await ctx.mongo.close();
+      console.log(cart)
+      return cart.cart
     }
   })
 

@@ -7,13 +7,14 @@ import "../styles/globals.css";
 import { SessionProvider } from "next-auth/react"
 import { createTRPCClient } from "@trpc/client";
 import { createContext, useState } from "react";
+import { ProductData } from "../components/products";
 
 //@ts-ignore
 export const CartContext = createContext();
 
 const MyApp: AppType = ({ Component, pageProps: { session, ...pageProps } }) => {
 
-  const [cartItems, setCartItems] = useState();
+  const [cartItems, setCartItems] = useState<Array<ProductData>>();
 
   return (
     <CartContext.Provider value={[cartItems, setCartItems]}>

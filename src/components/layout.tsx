@@ -2,18 +2,49 @@ import { useSession } from "next-auth/react";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useState, useContext, useEffect } from "react";
 import { FormData } from "../hooks/SetForm";
-import { client } from "../pages/_app";
+import { CartContext, client } from "../pages/_app";
 import { Cart } from "./cart";
 import { Form } from "./form";
 import { Login } from "./login";
+import { Messenger } from "./messenger";
+import { setLocalStorage } from "./products";
 
-interface LayoutProps { children: JSX.Element; }
-interface HeaderProps { }
-interface FooterProps { }
 
-const Layout: FC<LayoutProps> = ({ children }): JSX.Element => {
+
+const Layout: FC<{ children: JSX.Element; }> = ({ children }): JSX.Element => {
+
+    const [cartItems, setCartItems] = useContext<any>(CartContext)
+    const { data: session } = useSession();
+
+    const addCartToDatabase = useCallback((event: BeforeUnloadEvent) => {
+        console.log('adding items to database');
+        if (!session) return null
+
+        const local = window.localStorage.getItem('cart');
+        console.log(JSON.stringify(local))
+
+        console.log(cartItems)
+        cartItems && session.user && client.mutation('mongo.mongo-carts', { email: session.user.email ? session.user.email : '', item: cartItems });
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener('unload', addCartToDatabase);
+        loadResources();
+        return () => {
+            window.removeEventListener('unload', addCartToDatabase);
+        };
+    }, [addCartToDatabase]);
+
+    const loadResources = async () => {
+        if (!session && window.localStorage.getItem('cart') === typeof '') return setCartItems(JSON.parse(window.localStorage.getItem('cart')))
+        if (!session) return
+        console.log('loading data from database');
+        const res = session && client.query('mongo.mongo-carts', { email: session.user?.email ? session.user.email : '' });
+        console.log(await res)
+        setCartItems(await res);
+    }
 
     return (
         <>
@@ -23,6 +54,7 @@ const Layout: FC<LayoutProps> = ({ children }): JSX.Element => {
             </Head>
             <Header />
             {children}
+            <Messenger />
             <Footer />
         </>
     )
@@ -30,13 +62,14 @@ const Layout: FC<LayoutProps> = ({ children }): JSX.Element => {
 
 export default Layout;
 
-export const Header: FC<HeaderProps> = (): JSX.Element => {
+export const Header: FC<{}> = (): JSX.Element => {
 
     // toggles setBoolean in layout component
     const [cart, cartOpen] = useState(false);
     const [login, loginOpen] = useState(false);
     const [products, productsOpen] = useState(false);
     const [menu, menuOpen] = useState(false);
+    const [cartItems, setCart] = useContext<any>(CartContext)
     const { data: session } = useSession();
 
     const closeAllExcept = (exception: string) => {
@@ -45,6 +78,12 @@ export const Header: FC<HeaderProps> = (): JSX.Element => {
         exception !== 'products' && productsOpen(false);
         exception !== 'menu' && menuOpen(false)
     }
+
+    const handleCartUpdates = useCallback(() => {
+        console.log('setting local')
+        setLocalStorage(cartItems);
+
+    }, [])
 
     return (
         <>
@@ -59,15 +98,16 @@ export const Header: FC<HeaderProps> = (): JSX.Element => {
                 <div id='hardfadein' className='w-2/6 flex flex-row justify-evenly lg:visible md:visible invisible'>
                     <Links onProducts={value => { productsOpen(value); closeAllExcept('products') }} />
                 </div>
-                <span id='hardfadein' className='w-2/6 flex justify-center flex-row justify-center'>
+                <span id='hardfadein' className='w-2/6 flex justify-center flex-row'>
 
                     <button
                         className='mx-2 h-full w-1/3 lg:block md:block hidden'
                         aria-label={`${cart ? 'close' : 'open'} cart item display`}
                         onMouseEnter={e => {
                             cartOpen(true);
-                            closeAllExcept('cart')
-                        }}>
+                            closeAllExcept('cart');
+                        }}
+                        onMouseLeave={e => { handleCartUpdates() }}>
                         <Image src='/images/ui-elements/bags-shopping-thin.svg' width={40} height={40} />
                     </button>
                     {/* desktop cart */}
@@ -77,7 +117,8 @@ export const Header: FC<HeaderProps> = (): JSX.Element => {
                         className='lg:hidden md:hidden block h-full w-1/3'
                         onClick={e => {
                             cartOpen(!cart);
-                            closeAllExcept('cart')
+                            closeAllExcept('cart');
+                            handleCartUpdates()
                         }}>
                         <Image src='/images/ui-elements/bags-shopping-thin.svg' width={30} height={30} />
                     </button>
@@ -135,8 +176,8 @@ export const Header: FC<HeaderProps> = (): JSX.Element => {
                     className='fixed top-0 h-screen w-screen z-10 mt-20'
                     aria-label={`closing recently opened header interface`}
                     onMouseEnter={e => closeAllExcept('')} />
-                <div id='fadein' className='fixed lg:h-65 md:h-65 md:w-80 md:right-20 shadow-xl lg:w-80 z-20 shadow-2xl lg:right-80 top-20 bg-white flex flex-col justify-center items-center w-full h-80' style={{ minHeight: '20vh' }}>
-                    <Cart onCloseCart={() => cartOpen(false)} />
+                <div id='fadein' className='fixed lg:h-65 md:h-65 md:w-80 md:right-20 lg:w-80 z-20 shadow-2xl lg:right-80 top-20 bg-white flex flex-col justify-center items-center w-full h-80' style={{ minHeight: '20vh' }}>
+                    <Cart />
                 </div>
             </>}
             {products && <>
@@ -164,11 +205,8 @@ export const Header: FC<HeaderProps> = (): JSX.Element => {
     )
 }
 
-interface LinkProps {
-    onProducts: (products: boolean) => void
-}
 
-export const Links: FC<LinkProps> = ({ onProducts }): JSX.Element => {
+export const Links: FC<{ onProducts: (products: boolean) => void }> = ({ onProducts }): JSX.Element => {
 
     const callback = useCallback((products: boolean) => {
         onProducts(products);
@@ -178,7 +216,7 @@ export const Links: FC<LinkProps> = ({ onProducts }): JSX.Element => {
         <div className='w-full flex '>
             <span className='w-full flex lg:flex-row md:flex-row flex-col lg:p-0 justify-evenly items-center'>
                 <Link href='/' ><a onMouseEnter={e => { callback(false) }}>HOME</a></Link>
-                <span className='flex flex-row justify-center items-center cursor-pointer lg:block hidden lg:text-grey '
+                <span className=' flex-row justify-center items-center cursor-pointer lg:flex hidden lg:text-grey '
                     onMouseEnter={e => callback(true)}>
                     <Link href='/products/all-products'>
                         <a className='pr-3'>PRODUCTS</a>
@@ -190,7 +228,7 @@ export const Links: FC<LinkProps> = ({ onProducts }): JSX.Element => {
                 <Link href='/products/all-products'><a className='lg:hidden'>ALL PRODUCTS</a></Link>
 
             </span>
-            <span className='w-full flex flex-col items-center lg:hidden md:hidden block pt-5'>
+            <span className='w-full flex flex-col items-center lg:hidden md:hidden  pt-5'>
                 <ProductMenu />
             </span>
         </div>
@@ -198,7 +236,7 @@ export const Links: FC<LinkProps> = ({ onProducts }): JSX.Element => {
 }
 
 
-export const ProductMenu: FC = (): JSX.Element => {
+export const ProductMenu: FC<{}> = ({ }): JSX.Element => {
     return (
         <div className='h-full w-full flex flex-col lg:flex-row md:flex-row text-white'>
             <div className='lg:w-1/3 w-full h-full flex-col justify-center p-6'>
@@ -224,7 +262,7 @@ export const ProductMenu: FC = (): JSX.Element => {
     )
 }
 
-export const Footer: FC<FooterProps> = (): JSX.Element => {
+export const Footer: FC<{}> = (): JSX.Element => {
 
     const [success, setSuccess] = useState(false)
 
@@ -239,7 +277,7 @@ export const Footer: FC<FooterProps> = (): JSX.Element => {
         <div id='hardfadein' className='flex bg-grey p-5 text-white flex-col justify-center items-center' style={{ color: 'rgb(150,150,150)' }}>
             <div className='flex flex-row items-center justify-center h-full flex-wrap'>
 
-                <div className='flex lg:flex-row flex justify-evenly h-5/6 mx-20 mb-12 md:flex-col flex-col' style={{ color: 'rgb(150,150,150)' }}>
+                <div className='flex lg:flex-row justify-evenly h-5/6 mx-20 mb-12 md:flex-col flex-col' style={{ color: 'rgb(150,150,150)' }}>
                     <div className='lg:w-1/6 pl-8 w-full mr-8 h-full'>
                         <Image alt='kleanse logo' src='/images/kleanse-logos/kleanse-k.svg' height={200} width={200} />
                     </div>

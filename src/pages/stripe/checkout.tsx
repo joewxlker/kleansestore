@@ -81,23 +81,6 @@ const Checkout: NextPage = (): JSX.Element => {
 };
 export default Checkout;
 
-const checkoutWithoutSession = {
-    firstname: '',
-    lastname: '',
-    email: '',
-    street: '',
-    city: '',
-    state: '',
-    hidden: '',
-}
-
-const checkoutWithSession = {
-    street: '',
-    city: '',
-    state: '',
-    hidden: '',
-}
-
 export interface CheckoutWithSessionForm {
     street: string,
     city: string,

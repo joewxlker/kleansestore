@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, FormEvent, useCallback, useEffect, useState } from "react";
 import useSetForm, { FormData } from "../hooks/SetForm";
 import { dateData } from "../utils/siteInfo";
 
@@ -15,7 +15,8 @@ export const Form: FC<FormProps> = ({ buttons, onResponse, formData }): JSX.Elem
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<JSX.Element | null>();
 
-    const handleCallback = useCallback(async () => {
+    const handleCallback = useCallback(async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         setLoading(true);
         const res = await onResponse(form);
         setLoading(false)
@@ -34,7 +35,7 @@ export const Form: FC<FormProps> = ({ buttons, onResponse, formData }): JSX.Elem
 
     return (
         <div className='h-1/2'>
-            <form className='p-3 flex flex-col w-full justify-center items-center ' onSubmit={handleCallback}>
+            <form className='p-3 flex flex-col w-full justify-center items-center ' onSubmit={e => handleCallback(e)}>
                 <div className='w-full'>
 
                     {Object.keys(formData).map((types) => {
