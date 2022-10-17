@@ -2,6 +2,7 @@ import { useState } from "react";
 // import { SignUpForm } from "../pages/signup";
 
 export type FormData = {
+  phonenumber?: string;
   firstname?: string;
   lastname?: string,
   email: string;
@@ -11,6 +12,7 @@ export type FormData = {
   day?: string;
   month?: string;
   year?: string;
+  subject?: string;
   hidden: string
 }
 

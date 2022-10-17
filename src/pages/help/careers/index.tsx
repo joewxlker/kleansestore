@@ -50,7 +50,7 @@ const Careers: NextPage<CareerProps> = (props): JSX.Element => {
             <HelpLayout>
                 <div className='lg:flex-row md:flex-col flex-col w-screen lg:h-screen md:h-screen flex items-start'>
                     <div className='lg:w-5/6 md:w-full w-full h-full flex flex-col justify-start items-center'>
-                        <div className='my-5 my-20 w-1/2 flex flex-col items-center justify-evenly'>
+                        <div className='my-5 w-1/2 flex flex-col items-center justify-evenly'>
                             <h1 className='text-2xl'>Careers</h1>
                         </div>
                         <div className='lg:w-4/6 md:w-5/6 w-full h-4/6 overflow-scroll flex flex-col justify-start shadow-xl p-12 '>
@@ -99,7 +99,7 @@ const Careers: NextPage<CareerProps> = (props): JSX.Element => {
                                     Please provide a cover letter with your resume and we will contact you
                                 </span>
                                 <div className='h-full bg-white w-4/6'>
-                                    <Form formData={{ email: '', subject: '', phonenumber: '', message: '' }} buttons={[]} onResponse={handleFormResponse}></Form>
+                                    <Form formData={{ email: '', subject: '', phonenumber: '', message: '', hidden: '' }} buttons={[]} onResponse={handleFormResponse}></Form>
                                 </div>
                             </div>
                         </Layover>}

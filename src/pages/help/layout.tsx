@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
-import { ContactForm, FormType } from "../../hooks/SetForm";
 import { client } from "../_app";
 
 interface HelpLayoutProps { children: JSX.Element; }
