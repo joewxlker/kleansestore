@@ -9,7 +9,7 @@ import Layout from "../../components/layout"
 const Success: NextPage = (props) => {
 
     useEffect(() => {
-        window.location.href = '/checkout'
+        window.location.href = '/stripe/checkout'
     })
     return (
         <>
