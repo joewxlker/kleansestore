@@ -2,14 +2,18 @@ import { NextPage } from "next"
 import Head from "next/head"
 import Image from "next/image"
 import Link from "next/link"
+import { useEffect } from "react"
 import Layout from "../../components/layout"
 
 
 const Success: NextPage = (props) => {
 
+    useEffect(() => {
+        window.location.href = '/checkout'
+    })
     return (
         <>
-            <Head>
+            {/* <Head>
                 <meta name="description" content="" />
             </Head>
             <Layout>
@@ -23,7 +27,7 @@ const Success: NextPage = (props) => {
                         <Link href='/stripe/checkout' ><button className="bg-grey px-3 py-2 text-white">Return to checkout</button></Link>
                     </div>
                 </div>
-            </Layout>
+            </Layout> */}
         </>
 
     )

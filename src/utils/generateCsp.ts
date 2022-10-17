@@ -22,9 +22,9 @@ const generateCSP = ({ nonce }: generateCSPProps = {}) => {
     };
 
     //script-src
-    // add('script-src', `'nonce-${nonce}'`);
-    add('script-src', `'self'`);
-    add('script-src', `'unsafe-eval'`)
+    add('script-src', `'nonce-${nonce}'`);
+    // add('script-src', `'self'`);
+    // add('script-src', `'unsafe-eval'`)
 
     // script-src-elem
 

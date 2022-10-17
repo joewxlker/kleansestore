@@ -24,10 +24,8 @@ export const Form: FC<FormProps> = ({ buttons, onResponse, formData }): JSX.Elem
     }, [onResponse])
 
     useEffect(() => {
-        // @ts-ignore
         if (form['hidden'] !== '') return setInput(false);
         const text = Object.values(form).filter(e => e === '');
-        //  @ts-ignore
         const button = buttons.filter((x) => form[x] === undefined);
         return setInput(text.length === 1 && button.length === 0);
     }, [form, setForm])

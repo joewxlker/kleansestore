@@ -20,16 +20,10 @@ const Home: NextPage<HomeProps> = (props) => {
     <>
       <Layout>
         <>
-          <div className='' >
+          <div className='pt-6' >
             <Slider />
             <ImageCards />
             <Products params={'all-products'} products={props.products} />
-            <button
-              name='scroll to top'
-              aria-label="scrolling to top of page"
-              className=" fixed h-12 w-12 bg-salmon bottom-12 right-12 z-90"
-              style={{ borderRadius: '25px' }}
-              onClick={e => window.scrollTo(0, 0)} > <Image src='/images/ui-elements/angle-up-thin.svg' width={80} height={80} /> </button>
           </div>
         </>
       </Layout>
@@ -51,21 +45,20 @@ interface SliderProps { }
 export const Slider: FC<SliderProps> = (): JSX.Element => {
 
   const [count, setCount, setIncrement] = useIncrementData();
-  /** increment/decrement count based on input vars,  src/hooks*/
   const [hover, setHover] = useState<boolean>(false);
-  // prevents setInterval from running on hover
-
-  // const { data: session } = useSession()
 
   useEffect(() => {
     if (hover) return;
     const interval = setInterval(() => {
       setIncrement(images.length - 1, 'image', true);
-      // 2 = limit, 'target varible = image', true = increment
     }, 5000)
     return () => clearInterval(interval);
   }, [count, setCount, hover, setIncrement])
-  /** iterates imageslider data, see data here - src/utils/siteInfo.ts  */
+  /** 
+   * 
+   * iterates imageslider data, see data here - src/utils/siteInfo.ts 
+   * 
+   *  */
 
   return (
     <>
@@ -126,10 +119,10 @@ interface ImageCards { }
 export const ImageCards: FC<ImageCards> = (): JSX.Element => {
 
   return (
-    <div className='w-full flex flex-row flex-wrap justify-center z-1 relative'>
+    <div className='w-full flex flex-row flex-wrap justify-center z-1 relative '>
       {cards.map((info) => {
         return (
-          <div key={info.title} className='lg:w-1/4 md:w-1/4 w-5/6' onMouseEnter={e => { e.preventDefault(); }}>
+          <div key={info.title} className='lg:w-1/4 md:w-1/4 w-5/6 min-w-[20rem] md:py-12 sm:py-6' onMouseEnter={e => { e.preventDefault(); }}>
             <h2 className=''>{info.title}</h2>
             <p className=''>{info.paragraph}</p>
             <div className='w-90 h-80 bg-white z-3 mx-5'

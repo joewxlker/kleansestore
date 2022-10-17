@@ -57,6 +57,30 @@ export const cards = [{
     // main image cards data
 ]
 
+
+export const categoryItems = [
+    {
+        category: 'Mens',
+        listItems: [
+            {
+                title: 'beauty',
+            }]
+    },
+    {
+        category: 'Womens',
+        listItems: [
+            {
+                title: 'beauty',
+            }]
+    },
+    {
+        category: 'Sale',
+        listItems: [
+            {
+                title: 'beauty',
+            }]
+    }];
+
 const generateYears = () => {
     let year = [];
     for (let i = 1940; i <= 2022; i++) {

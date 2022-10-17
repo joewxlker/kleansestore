@@ -4,7 +4,6 @@ import Link from "next/link";
 import { FC, useEffect } from "react"
 import { Form } from "../components/form"
 import Layout from "../components/layout"
-import { Login } from "../components/login";
 import { FormData } from "../hooks/SetForm";
 import { client } from "./_app";
 
@@ -12,10 +11,17 @@ interface SignupProps { };
 
 const Signup: FC<SignupProps> = ({ }): JSX.Element => {
 
-    type SignupData = { firstname: string; lastname: string; email: string; password: string; confirm_password: string; day: string; month: string; year: string; hidden: string }
-
-    const handleRequest = async (data: SignupData) => {
-        console.log(data)
+    const handleRequest = async (data: {
+        firstname: string;
+        lastname: string;
+        email: string;
+        password: string;
+        confirm_password: string;
+        day: string;
+        month: string;
+        year: string;
+        hidden: string
+    }) => {
         if (data.password !== data.confirm_password) {
             return <PasswordError />
         }
@@ -39,7 +45,7 @@ const Signup: FC<SignupProps> = ({ }): JSX.Element => {
                             </a>
                         </Link>
                     </span>
-                    <Login />
+                    <button className='px-3 py-2 bg-grey text-white' onClick={() => signIn()}>Login</button>
                 </div>
             </div>)
     }

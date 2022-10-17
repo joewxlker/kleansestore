@@ -1,50 +1,31 @@
 import Image from "next/image";
 import Link from "next/link";
-import { FC, useContext } from "react"
+import { FC, useContext, useEffect, useState } from "react"
+import { useAddCart } from "../hooks/addToCart";
 import { CartContext } from "../pages/_app";
-import { ProductData } from "./products";
+import { ProductData, setLocalStorage } from "./products";
 
 
 export const Cart: FC = (): JSX.Element => {
 
-    const [items, setItems] = useContext<any>(CartContext)
+    const [items, setItems] = useContext<any[]>(CartContext);
+    const { addToCart, handleQuantities, handleRemoveItem } = useAddCart();
 
-    const handleQuantities = (item: ProductData | undefined, incDec: boolean) => {
-        if (!item || !items) return null
-        const [start, end] = findStartEnd(item)
-        if (!start || !end) return null
-        if (incDec) {
-            console.log(items[0].quantity)
-            return setItems([...start, { ...item, quantity: item.quantity + 1 }, ...end]);
-        }
-        return setItems([...start, { ...item, quantity: item.quantity - 1 }, ...end]);
-    }
+    useEffect(() => {
+        console.log('this runs on mount');
+        console.log(items);
+        return () => {
+            console.log('updating local on dismount with: ', items);
+            handleCartUpdates()
+        };
+    }, [])
 
-    const handleRemoveItem = (item: ProductData) => {
-        if (!item || !items) return null
-        const [start, end] = findStartEnd(item);
-        if (!start || !end) return null
-        if (items.length === 1) {
-            return setItems([])
-        }
-        return setItems([...start, ...end]);
-    }
-
-    const findStartEnd = (item: ProductData) => {
-        const index = items.findIndex((x: ProductData | undefined) => { return x?.default_price === item.default_price });
-        let start: Array<ProductData> = []
-        let end: Array<ProductData> = []
-        for (let i = 0; i <= index - 1; i++) {
-            if (i !== index) start.push(items[i])
-        }
-        for (let i = index; i < items.length; i++) {
-            if (i !== index) end.push(items[i])
-        }
-        return [start, end]
+    const handleCartUpdates = () => {
+        return items && setLocalStorage(items);
     }
 
     if (!items || items.length === 0) return (
-        <div id='hardfadein' className="w-full h-full flex flex-col justify-center items-center">
+        <div id='hardfadein' className="w-full flex flex-col justify-center items-center">
             <p className='text-grey'>Your cart is empty</p>
             <button className='bg-grey px-3 py-2 text-white' onClick={e => window.location.href = '/products/all-products'}>Shop Now</button>
         </div>
@@ -52,8 +33,8 @@ export const Cart: FC = (): JSX.Element => {
 
     return (
         <>
-            <div key={items[0].name} className='w-full flex flex-col justify-center items-center h-full z-10 bg-white'>
-                <div className='overflow-y-scroll' style={{ maxHeight: '20vh' }}>
+            <div className='w-full flex flex-col justify-center items-center z-10 bg-white'>
+                <div className='overflow-y-scroll'>
                     {items !== undefined && items !== null &&
                         items.map((data: ProductData) => {
                             return (
@@ -62,23 +43,19 @@ export const Cart: FC = (): JSX.Element => {
                                     {data.image !== undefined && <Image alt={`kleanse product ${data.name}`} src={data.image} height={90} width={90} />}
                                     <span className='flex w-1/2 flex-row justify-center items-center'>
                                         <div className='flex w-4/6 flex-col jusitfy-center items-center'>
-                                            <button className='w-8 h-8 bg-salmon'
+                                            <button className='w-6 h-6'
                                                 disabled={data.quantity === 10}
                                                 onClick={e => { handleQuantities(data, true); }}
-                                                style={{ borderRadius: '25px', opacity: `${data?.quantity === 10 ? '50%' : '100%'}` }}>+</button>
+                                                style={{ opacity: `${data?.quantity === 10 ? '50%' : '100%'}` }}>+</button>
                                             <h3>{data.quantity}</h3>
-                                            <button className='w-8 h-8 bg-salmon'
+                                            <button className='w-6 h-6'
                                                 disabled={data.quantity === 1}
                                                 onClick={e => { handleQuantities(data, false); }}
-                                                style={{ borderRadius: '25px', opacity: `${data.quantity === 1 ? '50%' : '100%'}` }}>-</button>
+                                                style={{ opacity: `${data.quantity === 1 ? '50%' : '100%'}` }}>-</button>
                                         </div>
                                         <button
-                                            className="h-16 w-16 text-grey rounded m-2"
-                                            onClick={e => {
-                                                //@ts-ignore
-                                                handleRemoveItem(data);
-                                            }
-                                            }>X</button>
+                                            className="h-16 w-16 text-grey m-2 bg-salmon rounded"
+                                            onClick={e => handleRemoveItem(data)}>X</button>
                                     </span>
                                 </div>
                             )
@@ -88,7 +65,7 @@ export const Cart: FC = (): JSX.Element => {
                 </div>
                 {items?.length !== 0 && <Link
                     href='/stripe/checkout'
-                ><a><button className='mt-5 px-3 py-2 bg-white' onClick={e => {
+                ><a className='w-[90%]' ><button className='mt-5 py-2 bg-salmon rounded margin-4 w-[100%]' onClick={e => {
                 }}>Checkout</button></a></Link>}
             </div>
             {/* <div className='bg-grey w-screen h-screen fixed top-0 left-0' onMouseEnter={e => handleCartUpdates(items, session, false, null)}></div> */}

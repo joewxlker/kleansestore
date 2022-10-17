@@ -1,7 +1,8 @@
 import Image from "next/image";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useContext, useState } from "react";
 import Stripe from "stripe";
 import { useAddCart } from "../hooks/addToCart";
+import { CartContext } from "../pages/_app";
 import { inferQueryOutput } from "../utils/trpc";
 import { Layover } from "./layover";
 
@@ -54,8 +55,6 @@ const Products: FC<ShopProps> = (props): JSX.Element => {
                                 >
                                     <Image alt={`kleanse product ${data.name}`} src={data.images[0]!} height={350} width={400} />
                                 </button>
-                                {/* <h2>{data.name}</h2>
-                                {data.unit_amount! / 100} */}
                                 <AddToCartButton
                                     data={{
                                         images: data.images,
@@ -157,7 +156,7 @@ interface AddToCartButtonProps {
 
 const AddToCartButton: FC<AddToCartButtonProps> = ({ data }): JSX.Element => {
 
-    const addItem = useAddCart()
+    const { addToCart } = useAddCart()
 
     const handleClick = () => {
         if (!data.default_price) return;
@@ -168,7 +167,7 @@ const AddToCartButton: FC<AddToCartButtonProps> = ({ data }): JSX.Element => {
             default_price: JSON.stringify(data.default_price),
             quantity: 1
         };
-        addItem(item)
+        addToCart(item)
     }
 
     return (
@@ -189,8 +188,10 @@ const AddToCartButton: FC<AddToCartButtonProps> = ({ data }): JSX.Element => {
 }
 
 export const setLocalStorage = (data: Array<ProductData>) => {
+    if (!data) return console.log(data)
     window.localStorage.clear();
-    window.localStorage.setItem('cart', JSON.stringify(data))
+    window.localStorage.setItem('cart', JSON.stringify(data));
+    console.log(window.localStorage.getItem('cart'))
 }
 
 

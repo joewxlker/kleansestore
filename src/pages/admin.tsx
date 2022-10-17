@@ -102,6 +102,7 @@ const MongoModule: FC<{ onMongo: (data: number) => void; setActive: (index: numb
                 {numArr.map((data) => {
                     return (
                         <button
+                            key={data}
                             value={data}
                             name=''
                             className={`${data % 2 === 0 ? 'bg-grey' : 'bg-white'} ${data === bytes[type] && '-translate-y-6 bg-accent'} w-px h-full`}

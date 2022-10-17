@@ -6,12 +6,12 @@ module.exports = {
   theme: {
     screens: {
 
-      'sm': '400px',
+      'sm': '0px',
 
       'md': '700px',
       // => @media (min-width: 960px) { ... }
 
-      'lg': '1240px',
+      'lg': '1040px',
       // => @media (min-width: 1440px) { ... }
     },
     colors: {

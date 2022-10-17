@@ -11,7 +11,6 @@ import { client } from "../_app"
 
 const Success: NextPage = (props) => {
 
-    const { query: session_id } = useRouter();
     const { data: session } = useSession();
     const [customer, setCustomer] = useState<inferQueryOutput<'stripe.session_id'>>();
 
