@@ -76,17 +76,13 @@ const Signup: FC<SignupProps> = ({ }): JSX.Element => {
                 <meta name="description" content="Signup to kleanse today" />
             </Head>
             <Layout>
-                <div className='w-screen flex flex-col items-center'>
-                    <div className='h-screen justify-center flex items-center flex-col w-1/3' style={{ minWidth: '20rem' }}>
-                        <button className='h-12 w-full bg-salmon m-4'>Sign up with google</button>
-                        <Form
-                            formData={{ firstname: '', lastname: '', email: '', password: '', hidden: '', confirm_password: '', }}
-                            buttons={['day', 'month', 'year']}
-                            onResponse={e => handleRequest(e)}
-                        />
-                        {/** pass types to create input fields, pass endpoint to target, buttons only needs definition for date of birth elements */}
-                        {/** onResponse returns complete form obj */}
-                    </div>
+                <div className='py-40 w-screen justify-center flex items-center flex-col lg:px-[35vw] md:px-[25vw] sm:px-[5vw] min-w-[20rem]'>
+                    <button className='h-12 lg:w-[20vw] md:w-[40vw] sm:w-[80vw] bg-salmon'>Sign up with google</button>
+                    <Form
+                        formData={{ firstname: '', lastname: '', email: '', password: '', hidden: '', confirm_password: '', }}
+                        buttons={['day', 'month', 'year']}
+                        onResponse={e => handleRequest(e)}
+                    />
                 </div>
             </Layout>
         </>

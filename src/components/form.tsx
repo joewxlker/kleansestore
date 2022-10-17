@@ -1,6 +1,7 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import useSetForm, { FormData } from "../hooks/SetForm";
 import { dateData } from "../utils/siteInfo";
+import Image from 'next/image'
 
 export function Form({ buttons, onResponse, formData }: {
     formData: FormData; onResponse: (data: any) => Promise<JSX.Element | null>;
@@ -29,47 +30,54 @@ export function Form({ buttons, onResponse, formData }: {
 
 
     return (
-        <div className='h-1/2'>
-            <form className='p-3 flex flex-col w-full justify-center items-center ' onSubmit={e => handleCallback(e)}>
-                <div className='w-full'>
-
-                    {Object.keys(formData).map((types) => {
-                        /** type is passed from parent elements,  */
-                        return (
-                            <input
-                                className='w-full bg-grey p-2 m-2 text-white'
-                                style={{ paddingBottom: `${types === 'message' && '10rem'}` }}
-                                key={types}
-                                name={types}
-                                // @ts-ignore
-                                value={form[types]}
-                                type={types === 'confirm_password' ? 'password' : types}
-                                placeholder={types}
-                                onChange={e => { setForm(e, '') }} />)
-                        //renders form text input elements  
-                    })}
-
-                    {buttons.map((period) => {
-                        return (<select className="w-full p-2 m-2" key={period} name={period}>
-
-                            <option value="" disabled selected>{period}</option>
-                            {dateData[period].map((value) => {
-                                return (
-                                    <>
-                                        <option key={value} value={value} placeholder={period} onClick={(e: any) => { setForm(e, period) }}>{value}</option>
-                                    </>
-                                )
-                            })}
-                        </select>)
-                    })}
-                </div>
-                <button className='bg-grey text-white p-2 px-5' type='submit' disabled={!input} style={{ opacity: `${!input ? '50%' : '100%'}` }}> Submit </button>
+        <div className='h-1/2 w-full'>
+            <form className='flex flex-col w-full justify-center items-center' onSubmit={e => handleCallback(e)}>
+                {Object.keys(formData).map((types) => <input
+                    className='w-5/6 bg-grey p-2 m-2 text-white'
+                    style={{ paddingBottom: `${types === 'message' && '10rem'}` }}
+                    key={types}
+                    name={types}
+                    // @ts-ignore
+                    value={form[types]}
+                    type={types === 'confirm_password' ? 'password' : types}
+                    placeholder={types}
+                    onChange={e => { setForm(e, '') }} />)}
+                {buttons.map((period) => <select
+                    className="w-5/6 p-2 m-2"
+                    key={period}
+                    name={period}>
+                    <option value="" disabled selected>
+                        {period}
+                    </option>
+                    {dateData[period].map((value) => <option
+                        key={value}
+                        value={value}
+                        placeholder={period}
+                        onClick={(e: any) => {
+                            setForm(e, period)
+                        }}>{value}</option>)}
+                </select>)}
+                {loading ? (<button
+                    className='bg-grey text-white p-2 px-5 w-[8rem] flex flex-row justify-between items-center'
+                    type='submit'
+                    disabled={!input}
+                    style={{ opacity: `${!input ? '50%' : '80%'}` }}>
+                    <p>Submit</p>
+                    <div className='animate-spin p-0 m-0 flex justify-center items-center'>
+                        <Image src='/images/ui-elements/spinner-third-duotone.svg' height={30} width={30} />
+                    </div>
+                </button>) : (<button
+                    className='bg-grey text-white p-2 px-5 w-[8rem] flex flex-row justify-center items-center'
+                    type='submit'
+                    disabled={!input}
+                    style={{ opacity: `${!input ? '50%' : '90%'}` }}>
+                    <p>Submit</p>
+                </button>)}
             </form>
 
             <div className='w-full justify-center items-center flex flex-col'>
                 {error}
             </div>
-            {loading && <p>Loading...</p>}
         </div>
     )
 }
