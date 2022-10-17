@@ -34,11 +34,9 @@ const Layout: FC<{ children: JSX.Element; }> = ({ children }): JSX.Element => {
         const loadResources = async () => {
             if (!session) {
                 const rawLocalData = window.localStorage.getItem('cart');
-                if (rawLocalData === 'undefined' || !rawLocalData) return console.log('cart is undefined or null');
-                console.log('loading local storage');
+                if (rawLocalData === 'undefined' || !rawLocalData) return;
                 return JSON.parse(rawLocalData) && setitems(JSON.parse(rawLocalData));
             }
-            console.log('loading data from database');
             const res = session && client.query('mongo.mongo-carts', { email: session.user?.email ? session.user.email : '' });
             const result = await res
 
@@ -70,15 +68,20 @@ export const Header: FC<{}> = (): JSX.Element => {
     const [cart, cartOpen] = useState(false);
     const [login, loginOpen] = useState(false);
     const [products, productsOpen] = useState(false);
+    const [delayCart, setDelayCart] = useState(false);
     const [menu, menuOpen] = useState(false);
     const { data: session } = useSession();
 
+
     const closeAllExcept = (exception: string) => {
         exception !== 'cart' && cartOpen(false);
+        exception !== 'cart' && setTimeout(() => { setDelayCart(false); }, 300);
+        exception !== 'cart' && setTimeout(() => { setDelayCart(true); }, 400);
         exception !== 'login' && loginOpen(false);
         exception !== 'products' && productsOpen(false);
         exception !== 'menu' && menuOpen(false)
     }
+
 
     return (
         <>
@@ -99,6 +102,7 @@ export const Header: FC<{}> = (): JSX.Element => {
                         aria-label={`${cart ? 'close' : 'open'} cart item display`}
                         onMouseEnter={e => {
                             cartOpen(true);
+                            setDelayCart(true);
                             closeAllExcept('cart');
                         }}
                     >
@@ -153,13 +157,13 @@ export const Header: FC<{}> = (): JSX.Element => {
                 className={`${cart ? 'flex' : 'hidden'} fixed top-0 h-screen w-screen z-10 mt-20 bg-grey bg-opacity-30 transition`}
                 aria-label={`closing recently opened header interface`}
                 onMouseEnter={e => closeAllExcept('')} />}
-            <div className={`${cart ? 'opacity-100' : 'opacity-0 sm:translate-y-[20rem] md:-translate-y-[20rem] lg:-translate-y-[20rem]'} duration-500 transition lg:w-[20vw] lg:top-20 lg:right-[17.6vw] lg:bottom-auto
+            {delayCart && <div className={`${cart ? 'opacity-100' : 'opacity-0 sm:translate-y-[20rem] md:-translate-y-[20rem] lg:-translate-y-[20rem]'} duration-500 transition lg:w-[20vw] lg:top-20 lg:right-[17.6vw] lg:bottom-auto
                      md:w-80 md:top-20 md:right-[10vw] md:bottom-auto
                      sm:bottom-0
                      z-20 shadow-2xl pb-5 bg-white flex flex-col justify-center items-center w-full pt-6 max-h-fit fixed `
             }>
                 <Cart />
-            </div>
+            </div>}
 
             {products && <div
                 id='hardfadein'

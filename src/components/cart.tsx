@@ -8,21 +8,12 @@ import { ProductData, setLocalStorage } from "./products";
 
 export const Cart: FC = (): JSX.Element => {
 
-    const [items, setItems] = useContext<any[]>(CartContext);
-    const { addToCart, handleQuantities, handleRemoveItem } = useAddCart();
+    const [items] = useContext<any[]>(CartContext);
+    const { handleQuantities, handleRemoveItem } = useAddCart();
 
     useEffect(() => {
-        console.log('this runs on mount');
-        console.log(items);
-        return () => {
-            console.log('updating local on dismount with: ', items);
-            handleCartUpdates()
-        };
-    }, [])
-
-    const handleCartUpdates = () => {
-        return items && setLocalStorage(items);
-    }
+        items && setLocalStorage(items);
+    }, [useAddCart, items])
 
     if (!items || items.length === 0) return (
         <div id='hardfadein' className="w-full flex flex-col justify-center items-center">

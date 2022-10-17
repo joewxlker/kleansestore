@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 import { CartContext } from '../pages/_app'
 import { ProductData, setLocalStorage } from '../components/products';
 
@@ -18,8 +18,7 @@ export function useAddCart(): {
     }
 
     function addToCart(item: ProductData): void | null {
-        return checkExistence(item) ? (
-            setCartItems([...cartItems, item])) : null
+        return checkExistence(item) ? setCartItems([...cartItems, item]) : null
     }
 
     function handleQuantities(item: ProductData | undefined, incDec: boolean): void {

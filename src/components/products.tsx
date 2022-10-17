@@ -188,10 +188,9 @@ const AddToCartButton: FC<AddToCartButtonProps> = ({ data }): JSX.Element => {
 }
 
 export const setLocalStorage = (data: Array<ProductData>) => {
-    if (!data) return console.log(data)
+    if (!data) return
     window.localStorage.clear();
     window.localStorage.setItem('cart', JSON.stringify(data));
-    console.log(window.localStorage.getItem('cart'))
 }
 
 

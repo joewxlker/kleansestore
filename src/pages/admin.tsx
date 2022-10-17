@@ -129,9 +129,6 @@ const Wrapper: FC<{
     total: number;
     index: number;
 }> = ({ children, title, dark, total, listData, index }): JSX.Element => {
-    useEffect(() => {
-        console.log(index)
-    })
     return (
         <div className='flex flex-row w-full my-20'>
             <div className='w-1/2 flex flex-col justify-start items-center min-w-[20rem] shadow-2xl translate-x-20 z-50 '>

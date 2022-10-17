@@ -2,7 +2,7 @@ import type { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
 import { FC, useEffect, useState } from "react";
 import Layout from "../components/layout";
-import { useIncrementData } from "../hooks/useIntervals";
+import useIncrementData from "../hooks/useIntervals";
 import { cards, images } from "../utils/siteInfo";
 import { inferQueryOutput } from "../utils/trpc";
 import Products, { ProductData } from '../components/products'
@@ -36,7 +36,6 @@ export default Home
 
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  console.log(process.env.DOMAIN)
   const req = await fetch(`${process.env.DOMAIN}/api/stripe`);
   const products = await req.json();
   return { props: { products } }

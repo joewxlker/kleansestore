@@ -1,14 +1,11 @@
-import { FC, FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import useSetForm, { FormData } from "../hooks/SetForm";
 import { dateData } from "../utils/siteInfo";
 
-interface FormProps {
-    formData: FormData;
-    onResponse: (data: any) => Promise<JSX.Element | null>;
+export function Form({ buttons, onResponse, formData }: {
+    formData: FormData; onResponse: (data: any) => Promise<JSX.Element | null>;
     buttons: Array<'day' | 'month' | 'year'> | [];
-};
-
-export const Form: FC<FormProps> = ({ buttons, onResponse, formData }): JSX.Element => {
+}): JSX.Element {
 
     const [form, setForm] = useSetForm(formData);
     const [input, setInput] = useState(false);
