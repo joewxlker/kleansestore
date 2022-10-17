@@ -10,7 +10,7 @@ interface ProductsProps {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-    const req = await fetch('http://localhost:3000/api/stripe');
+    const req = await fetch(`${process.env.DOMAIN}/api/stripe`);
     const products = await req.json();
     const params = context.params?.products
     return { props: { products, params } }

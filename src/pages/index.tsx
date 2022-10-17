@@ -36,7 +36,7 @@ export default Home
 
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const req = await fetch('http://localhost:3000/api/stripe');
+  const req = await fetch(`${process.env.DOMAIN}/api/stripe`);
   const products = await req.json();
   return { props: { products } }
 }
