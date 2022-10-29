@@ -1,6 +1,7 @@
 {
   "name": "kleanse",
   "version": "0.1.0",
+  "description": "An e-commerce website built using nextjs, react, tRPC, typescsript, tailwind, stripe, mongodb and sendgrid"
   "private": true,
   "scripts": {
     "dev": "next dev",
