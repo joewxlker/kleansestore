@@ -2,33 +2,20 @@ import { useSession } from "next-auth/react";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { FC, useCallback, useState, useContext, useEffect } from "react";
+import { FC, useCallback, useState, useContext, useEffect, useRef } from "react";
 import { FormData } from "../hooks/SetForm";
 import { CartContext, client } from "../pages/_app";
 import { Cart } from "./cart";
 import { Form } from "./form";
 import { Messenger } from "./messenger";
 import { signIn } from 'next-auth/react'
-import { setLocalStorage } from "./products";
 import { categoryItems } from "../utils/siteInfo";
 
 
 const Layout: FC<{ children: JSX.Element; }> = ({ children }): JSX.Element => {
 
-    const [items, setitems] = useContext<Array<any>>(CartContext)
+    const [, setitems] = useContext(CartContext);
     const { data: session } = useSession();
-
-    // useEffect(() => {
-    //     return () => addCartToDatabase();
-    // })
-
-    // const addCartToDatabase = useCallback(() => {
-    //     console.log('this will run on unload')
-    //     if (!session) return setLocalStorage(items);
-    //     console.log('adding items to database');
-    //     const local = window.localStorage.getItem('cart');
-    //     items && session.user && client.mutation('mongo.mongo-carts', { email: session.user.email ? session.user.email : '', item: items });
-    // }, []);
 
     useEffect(() => {
         const loadResources = async () => {
@@ -45,7 +32,7 @@ const Layout: FC<{ children: JSX.Element; }> = ({ children }): JSX.Element => {
             result !== undefined && setitems(result)
         }
         loadResources();
-    }, [])
+    }, [session, setitems])
 
 
     return (
@@ -54,6 +41,9 @@ const Layout: FC<{ children: JSX.Element; }> = ({ children }): JSX.Element => {
                 <title>kleanse</title>
                 <meta name="description" content="kleanse official website" />
             </Head>
+            <section className="w-full h-12 bg-grey text-white flex flex-row justify-center items-center hover:opacity-80 cursor-pointer z-[100] relative">
+                <h2>New stock out now</h2>
+            </section>
             <Header />
             {children}
             <Messenger />
@@ -64,7 +54,7 @@ const Layout: FC<{ children: JSX.Element; }> = ({ children }): JSX.Element => {
 
 export default Layout;
 
-export const Header: FC<{}> = (): JSX.Element => {
+export const Header: FC = (): JSX.Element => {
 
     // toggles setBoolean in layout component
     const [cart, cartOpen] = useState(false);
@@ -72,6 +62,30 @@ export const Header: FC<{}> = (): JSX.Element => {
     const [products, productsOpen] = useState(false);
     const [menu, menuOpen] = useState(false);
     const { data: session } = useSession();
+    const [scrollHeightIsZero, setScrollHeightIsZero] = useState(true);
+    const [headerHeight, setHeaderHeight] = useState<number>(0);
+
+    const headerElementRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const scroller = () => {
+            if (window.scrollY === 0) {
+                setScrollHeightIsZero(true);
+                if (headerElementRef.current) {
+                    console.log(headerElementRef.current?.clientHeight)
+                    setHeaderHeight(headerElementRef.current?.clientHeight);
+                }
+            } else if (scrollHeightIsZero) {
+                setScrollHeightIsZero(false)
+                if (headerElementRef.current) {
+                    console.log(headerElementRef.current?.clientHeight)
+                    setHeaderHeight(headerElementRef.current?.clientHeight);
+                }
+            }
+        }
+        window.addEventListener('scroll', scroller)
+        return () => window.removeEventListener('scroll', scroller);
+    })
 
     const closeAllExcept = (exception: string) => {
         exception !== 'cart' && cartOpen(false);
@@ -82,9 +96,14 @@ export const Header: FC<{}> = (): JSX.Element => {
 
     return (
         <>
-            <header className='bg-white fixed flex items-center h-20 flex-row shadow-xl w-[100vw] justify-evenly z-[100] p-3' >
+
+            <header
+                ref={headerElementRef}
+                className={`${scrollHeightIsZero ? 'bg-white h-20' : "bg-grey h-12 text-white"} transition-all 
+                sticky top-0 flex items-center flex-row shadow-xl w-[100vw] justify-evenly z-[100] p-3 duration-800`
+                }>
                 <span id='hardfadein' className='lg:w-2/6 md:w-2/6 sm:1/6 flex flex-col  items-center hover:cursor-pointer'
-                    onClick={e => {
+                    onClick={() => {
                         if (window.location.pathname === '/') return window.scrollTo(0, 0);
                         return window.location.href = '/'
                     }}>
@@ -97,23 +116,23 @@ export const Header: FC<{}> = (): JSX.Element => {
                     <button
                         className='lg:flex mx-2 h-full md:flex sm:hidden'
                         aria-label={`${cart ? 'close' : 'open'} cart item display`}
-                        onMouseEnter={e => {
+                        onMouseEnter={() => {
                             cartOpen(true);
                             closeAllExcept('cart');
                         }}
                     >
-                        <Image src='/images/ui-elements/bags-shopping-thin.svg' width={30} height={30} />
+                        <Image alt='' src='/images/ui-elements/bags-shopping-thin.svg' width={20} height={20} />
                     </button>
                     {/* desktop cart */}
                     <button
                         name='cart'
                         aria-label={`${cart ? 'close' : 'open'} cart item display`}
                         className='lg:hidden md:hidden sm:flex h-full w-1/2'
-                        onClick={e => {
+                        onClick={() => {
                             cartOpen(!cart);
                             closeAllExcept('cart');
                         }}>
-                        <Image src='/images/ui-elements/bags-shopping-thin.svg' width={20} height={20} />
+                        <Image alt='' src='/images/ui-elements/bags-shopping-thin.svg' width={20} height={20} />
                     </button>
                     {/* mobile cart */}
 
@@ -122,7 +141,7 @@ export const Header: FC<{}> = (): JSX.Element => {
                             name={`${session ? 'logout' : 'login'}`}
                             className='hover:text-grey-light text-center text-sm'
                             aria-label={`${login ? 'close' : 'open'} login interface`}
-                            onClick={e => signIn()}>
+                            onClick={() => signIn()}>
                             <p className=''>{session ? 'Logout' : 'Login /'}</p>
                         </button>
 
@@ -137,11 +156,11 @@ export const Header: FC<{}> = (): JSX.Element => {
                         name='site navigation menu'
                         className='md:hidden lg:hidden flex hover:text-grey-light'
                         aria-label={`${login ? 'close' : 'open'} navigation menu`}
-                        onClick={e => {
+                        onClick={() => {
                             menuOpen(!menu);
                             closeAllExcept('menu');
                         }}>
-                        <Image className='hover:text-grey-light' src='/images/ui-elements/bars-thin.svg' width={20} height={20} />
+                        <Image alt='' className='hover:text-grey-light' src='/images/ui-elements/bars-thin.svg' width={20} height={20} />
                     </button>
                 </div>
                 {/* header buttons */}
@@ -150,23 +169,27 @@ export const Header: FC<{}> = (): JSX.Element => {
 
             {cart && <div
                 id='hardfadein'
-                className={`${cart ? 'flex' : 'hidden'} fixed top-0 h-screen w-screen z-10 mt-20 bg-grey bg-opacity-30 transition`}
+                className={`${cart ? 'flex' : 'hidden'} fixed top-0 h-screen w-screen z-10 bg-grey bg-opacity-30 transition`}
                 aria-label={`closing recently opened header interface`}
-                onMouseEnter={e => closeAllExcept('')} />}
-            <div className={`${cart ? 'opacity-100' : 'opacity-0 sm:translate-y-[20rem] md:-translate-y-[20rem] lg:-translate-y-[20rem]'} duration-500 transition lg:w-[20vw] lg:top-20 lg:right-[17.6vw] lg:bottom-auto
-                     md:w-80 md:top-20 md:right-[10vw] md:bottom-auto
+                onMouseEnter={() => closeAllExcept('')} />}
+            <div className={`${cart ? 'opacity-100' : 'opacity-0 sm:translate-y-[20rem] md:-translate-y-[25rem] lg:-translate-y-[20rem]'} 
+                     duration-500 transition lg:w-[20vw] lg:right-[17.6vw] lg:bottom-auto
+                     md:w-80 md:right-[10vw] md:bottom-auto
                      sm:bottom-0
                      z-20 shadow-2xl pb-5 bg-white flex flex-col justify-center items-center w-full pt-6 max-h-fit fixed `
-            }>
+            } style={{ top: `${scrollHeightIsZero ? headerHeight + 80 : headerHeight - 35}px` }}>
                 <Cart />
             </div>
 
             {products && <div
                 id='hardfadein'
-                className={`${products ? 'flex' : 'hidden'} duration-500 fixed top-0 h-screen w-screen z-10 mt-20 bg-grey bg-opacity-30 transition-all`}
+                className={`${products ? 'flex' : 'hidden'} duration-500 fixed top-0 h-screen w-screen z-10 bg-grey bg-opacity-30 transition-all`}
                 aria-label={`closing recently opened header interface`}
-                onMouseEnter={e => closeAllExcept('')} />}
-            <div id='hardfadein' className={` ${products ? 'opacity-100' : ' opacity-0 -translate-y-[20rem]'} duration-500 transition fixed z-20  shadow-2xl top-20 flex flex-col justify-center items-center bg-grey min-h-[20vh] w-[80vw] mx-[10vw]`}>
+                onMouseEnter={() => closeAllExcept('')} />}
+            <div id='hardfadein'
+                className={` ${products ? 'opacity-100' : ' opacity-0 -translate-y-[20rem]'} duration-500 transition fixed z-20  shadow-2xl flex flex-col 
+                justify-center items-center bg-grey min-h-[20vh] w-[80vw] mx-[10vw]`}
+                style={{ top: `${scrollHeightIsZero ? headerHeight + 80 : headerHeight - 35}px` }}>
                 <ProductMenu />
             </div>
 
@@ -174,7 +197,7 @@ export const Header: FC<{}> = (): JSX.Element => {
                 id='hardfadein'
                 className={` ${menu ? 'opacity-100' : ' opacity-0 '} duration-500 fixed top-0 h-screen w-screen z-10 mt-20
                 bg-grey bg-opacity-30 transition-all`}
-                onMouseEnter={e => closeAllExcept('')}
+                onMouseEnter={() => closeAllExcept('')}
             />}
             <div
                 className={` ${menu ? 'opacity-100' : ' opacity-0 translate-y-[20rem]'}
@@ -184,7 +207,7 @@ export const Header: FC<{}> = (): JSX.Element => {
                   sm:visible
                    z-20 bottom-0 flex text-white flex-col justify-center items-center w-full shadow-grey shadow-xl bg-grey`}
                 style={{ minHeight: '20vh' }}>
-                <Links onProducts={e => { }} />
+                <Links onProducts={() => ''} />
             </div>
 
         </>
@@ -201,17 +224,17 @@ export const Links: FC<{ onProducts: (products: boolean) => void }> = ({ onProdu
     return (
         <div className='w-full flex'>
             <span className='w-full flex lg:flex-row md:flex-row flex-col lg:p-0 justify-evenly items-center'>
-                <Link href='/' ><a className='hover:text-grey-light' onMouseEnter={e => { callback(false) }}>Home</a></Link>
+                <Link href='/' ><span className='hover:text-grey-light' onMouseEnter={() => { callback(false) }}>Home</span></Link>
                 <span className=' flex-row justify-center items-center cursor-pointer lg:flex hidden lg:text-grey '
-                    onMouseEnter={e => callback(true)}>
+                    onMouseEnter={() => callback(true)}>
                     <Link href='/products/all-products'>
-                        <a className='pr-3 hover:text-grey-light'>Products</a>
+                        Products
                     </Link>
-                    <Image className='hover:text-grey-light' src='/images/ui-elements/chevron-down-thin.svg' height={20} width={20} />
+                    <Image alt='' className='hover:text-grey-light' src='/images/ui-elements/chevron-down-thin.svg' height={20} width={20} />
                     <i className="fak fa-chevron-down-thin hover:text-grey-light"></i>
                 </span>
-                <Link href='/about' ><a className='hover:text-grey-light' onMouseEnter={e => callback(false)}>About</a></Link>
-                <Link href='/products/all-products'><a className='lg:hidden'>All Products</a></Link>
+                <Link href='/about' ><span className='hover:text-grey-light' onMouseEnter={() => callback(false)}>About</span></Link>
+                <Link href='/products/all-products'><span className='lg:hidden'>All Products</span></Link>
 
             </span>
             <span className='w-full flex flex-col items-center lg:hidden md:hidden  pt-5'>
@@ -222,7 +245,7 @@ export const Links: FC<{ onProducts: (products: boolean) => void }> = ({ onProdu
 }
 
 
-export const ProductMenu: FC<{}> = ({ }): JSX.Element => {
+export const ProductMenu: FC = ({ }): JSX.Element => {
 
     return (
         <div className='h-full w-full flex flex-col lg:flex-row md:flex-row text-white'>
@@ -244,7 +267,7 @@ export const ProductMenu: FC<{}> = ({ }): JSX.Element => {
     )
 }
 
-export const Footer: FC<{}> = (): JSX.Element => {
+export const Footer: FC = (): JSX.Element => {
 
     const [success, setSuccess] = useState(false)
 
@@ -266,38 +289,38 @@ export const Footer: FC<{}> = (): JSX.Element => {
                     <div className='lg:w-1/6 flex flex-col justify-center items-start pt-4'>
                         <h3>FIND US HERE</h3>
                         <span className="flex flex-col items-start h-full w-full justify-evenly">
-                            <Link href='https://www.facebook.com'><a className='flex flex-row w-full items-center' >
+                            <Link href='https://www.facebook.com'><span className='flex flex-row w-full items-center' >
                                 <div className='w-8 h-8'>
-                                    <Image src='/images/ui-elements/facebook-f-brands.svg' width={30} height={30} />
+                                    <Image alt='' src='/images/ui-elements/facebook-f-brands.svg' width={20} height={20} />
                                 </div>
-                                <p className="ml-3">Facebook</p></a></Link>
-                            <Link href='https://www.instagram.com'><a className='flex flex-row w-full items-center' >
+                                <p className="ml-3">Facebook</p></span></Link>
+                            <Link href='https://www.instagram.com'><span className='flex flex-row w-full items-center' >
                                 <div className='w-8 h-8'>
-                                    <Image src='/images/ui-elements/instagram-brands.svg' width={30} height={30} />
+                                    <Image alt='' src='/images/ui-elements/instagram-brands.svg' width={20} height={20} />
                                 </div>
-                                <p className="ml-3">Instagram</p></a></Link>
-                            <Link href='https://www.twitter.com'><a className='flex flex-row w-full items-center' >
+                                <p className="ml-3">Instagram</p></span></Link>
+                            <Link href='https://www.twitter.com'><span className='flex flex-row w-full items-center' >
                                 <div className='w-8 h-8'>
-                                    <Image src='/images/ui-elements/twitter-brands.svg' width={30} height={30} />
+                                    <Image alt='' src='/images/ui-elements/twitter-brands.svg' width={20} height={20} />
                                 </div>
-                                <p className="ml-8">Twitter</p></a></Link>
+                                <p className="ml-8">Twitter</p></span></Link>
                         </span>
                     </div>
                     <div className='lg:w-1/6 flex flex-col justify-center items-start pt-4'>
                         <h3>KLEANSE</h3>
                         <span className='h-full flex flex-col pt-6'>
-                            <Link className='' href='/about'><a className=''><p>About Kleanse</p></a></Link>
-                            <Link className='' href='/help/careers'><a className=''><p>Careers</p></a></Link>
-                            <Link className='' href='/help/general'><a className=''><p>Code of Ethics</p></a></Link>
-                            <Link className='' href='/help/general'><a className=''><p>Privacy Policy</p></a></Link>
+                            <Link className='' href='/about'><span className=''><p>About Kleanse</p></span></Link>
+                            <Link className='' href='/help/careers'><span className=''><p>Careers</p></span></Link>
+                            <Link className='' href='/help/general'><span className=''><p>Code of Ethics</p></span></Link>
+                            <Link className='' href='/help/general'><span className=''><p>Privacy Policy</p></span></Link>
                         </span>
                     </div>
                     <div className='lg:w-1/6 h-full flex flex-col items-start pt-4'>
                         <h3>HOW CAN WE HELP</h3>
                         <span className='h-full flex flex-col pt-6'>
-                            <Link href='/help/general/shipping'><a className=''><p>Shipping</p></a></Link>
-                            <Link className='' href='/help/general'><a className=''><p>FAQ&#39;s</p></a></Link>
-                            <Link className='' href='/help/unsubscribe'><a className=''><p>Unsubscribe</p></a></Link>
+                            <Link href='/help/general/shipping'><span className=''><p>Shipping</p></span></Link>
+                            <Link className='' href='/help/general'><span className=''><p>FAQ&#39;s</p></span></Link>
+                            <Link className='' href='/help/unsubscribe'><span className=''><p>Unsubscribe</p></span></Link>
                         </span>
                     </div>
                 </div>

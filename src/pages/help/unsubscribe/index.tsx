@@ -5,42 +5,36 @@ import { Form } from "../../../components/form";
 import HelpLayout from "../layout";
 
 const Unsubscribe: NextPage = () => {
+  const removeFromMailList = async (email: string) => {
+    return <Success />;
+  };
 
-    const removeFromMailList = async (email: string) => {
-        return <Success />
-    }
+  const Success: FC = (): JSX.Element => {
+    useEffect(() => {
+      window.location.href = "/";
+    }, []);
 
-    const Success: FC = (): JSX.Element => {
+    return <div>Success</div>;
+  };
 
-        useEffect(() => {
-            window.location.href = '/'
-        }, [])
-
-        return <div>
-            Success
-        </div>
-    }
-
-    return (
+  return (
+    <>
+      <Head>
+        <meta name="description" content="" />
+      </Head>
+      <HelpLayout>
         <>
-
-            <Head>
-                <meta name="description" content="" />
-            </Head>
-            <HelpLayout>
-                <>
-                    <div className='w-screen flex flex-col justify-center items-center py-12 '>
-                        <div className='h-80 my-20 w-1/2 flex flex-col items-center justify-evenly'>
-                            <h1 className='text-2xl'>Unsubscribe</h1>
-                            <p>Please enter the email of the account you wish to unsubscribe</p>
-                            <Form formData={{ email: '', hidden: '' }} buttons={[]} onResponse={(email) => removeFromMailList(email)} />
-                        </div>
-                    </div>
-                </>
-            </HelpLayout>
+          <div className="w-screen flex flex-col justify-center items-center py-12 ">
+            <div className="h-80 my-20 w-1/2 flex flex-col items-center justify-evenly">
+              <h1 className="text-2xl">Unsubscribe</h1>
+              <p>Please enter the email of the account you wish to unsubscribe</p>
+              <Form formData={{ email: "", hidden: "" }} buttons={[]} onResponse={email => removeFromMailList(email)} />
+            </div>
+          </div>
         </>
+      </HelpLayout>
+    </>
+  );
+};
 
-    )
-}
-
-export default Unsubscribe
+export default Unsubscribe;

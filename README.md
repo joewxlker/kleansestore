@@ -1,4 +1,3 @@
-
 ### An e-commerce website built using nextjs, react, tRPC, typescsript, tailwind, stripe, mongodb and sendgrid
 
 Before running this code on you machine you will need to configure environment variables for stripe as well as mongodb.
@@ -16,8 +15,7 @@ Create a stripe account and get your api key here - https://stripe.com/en-au
 #### Development environment
 
     npm run dev
-    
-    
+
 #### Production envirnment
 
     npm run build

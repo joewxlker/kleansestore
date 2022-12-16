@@ -3,34 +3,33 @@
 @tailwind utilities;
 
 html {
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
 }
 
-
 #fadein {
-    animation: fadein 1s;
+  animation: fadein 1s;
 }
 
 #hardfadein {
-    animation: hardfade 1s;
+  animation: hardfade 1s;
 }
 
 @keyframes fadein {
-    from {
-        opacity: 40%
-    }
+  from {
+    opacity: 40%;
+  }
 
-    to {
-        opacity: 100%;
-    }
+  to {
+    opacity: 100%;
+  }
 }
 
 @keyframes hardfade {
-    from {
-        opacity: 0%
-    }
+  from {
+    opacity: 0%;
+  }
 
-    to {
-        opacity: 100%;
-    }
+  to {
+    opacity: 100%;
+  }
 }

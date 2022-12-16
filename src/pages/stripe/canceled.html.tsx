@@ -1,19 +1,17 @@
-import { NextPage } from "next"
-import Head from "next/head"
-import Image from "next/image"
-import Link from "next/link"
-import { useEffect } from "react"
-import Layout from "../../components/layout"
+import { NextPage } from "next";
+import Head from "next/head";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect } from "react";
+import Layout from "../../components/layout";
 
-
-const Success: NextPage = (props) => {
-
-    useEffect(() => {
-        window.location.href = '/checkout'
-    })
-    return (
-        <>
-            {/* <Head>
+const Success: NextPage = props => {
+  useEffect(() => {
+    window.location.href = "/checkout";
+  });
+  return (
+    <>
+      {/* <Head>
                 <meta name="description" content="" />
             </Head>
             <Layout>
@@ -28,10 +26,8 @@ const Success: NextPage = (props) => {
                     </div>
                 </div>
             </Layout> */}
-        </>
+    </>
+  );
+};
 
-    )
-}
-
-export default Success
-
+export default Success;

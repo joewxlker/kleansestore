@@ -5,25 +5,24 @@ module.exports = {
   // purge: ["./src/pages/**/*.{js,jsx,ts,tsx}", './src/styles/**/*.css'],
   theme: {
     screens: {
+      sm: "0px",
 
-      'sm': '0px',
-
-      'md': '700px',
+      md: "700px",
       // => @media (min-width: 960px) { ... }
 
-      'lg': '1040px',
+      lg: "1040px",
       // => @media (min-width: 1440px) { ... }
     },
     colors: {
-      'salmon': '#ffa58f',
-      'grey': '#212121',
-      'grey-light': '#787777',
-      'white': '#ffffff',
-      'accent': '#8bdafc',
+      salmon: "#ffa58f",
+      grey: "#212121",
+      "grey-light": "#787777",
+      white: "#ffffff",
+      accent: "#8bdafc",
     },
     fontFamily: {
-      'sans': ['Graphik', 'sans-serif'],
-      'serif': ['Merriweather', 'serif'],
+      sans: ["Graphik", "sans-serif"],
+      serif: ["Merriweather", "serif"],
     },
     extend: {},
   },

@@ -1,17 +1,16 @@
 // src/pages/_app.tsx
-import { withTRPC } from "@trpc/next";
 import type { AppRouter } from "../server/router";
-import type { AppType } from "next/dist/shared/lib/utils";
 import superjson from "superjson";
 import "../styles/globals.css";
-import { SessionProvider } from "next-auth/react"
+import { SessionProvider } from "next-auth/react";
 import { createTRPCClient } from "@trpc/client";
 import { createContext, useState } from "react";
+import { AppType } from "next/dist/shared/lib/utils";
+import { withTRPC } from "@trpc/next";
 
 export const CartContext = createContext<Array<any>>([]);
 
-const MyApp: AppType = ({ Component, pageProps: { session, ...pageProps } }) => {
-
+const MyApp: any = ({ Component, pageProps: { session, ...pageProps } }: { Component: any; pageProps: { session: any } }) => {
   const [items, setItems] = useState<Array<any>>([]);
 
   return (
@@ -20,11 +19,9 @@ const MyApp: AppType = ({ Component, pageProps: { session, ...pageProps } }) => 
         <Component {...pageProps} />
       </SessionProvider>
     </CartContext.Provider>
-  )
+  );
   // using next-auth session
 };
-
-
 
 const getBaseUrl = () => {
   if (typeof window !== "undefined") {
@@ -50,5 +47,5 @@ export default withTRPC<AppRouter>({
 })(MyApp);
 
 export const client = createTRPCClient<AppRouter>({
-  url: `${getBaseUrl()}/api/trpc`
+  url: `${getBaseUrl()}/api/trpc`,
 });

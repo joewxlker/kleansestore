@@ -5,45 +5,39 @@ import { generateNonce } from "../utils/generateCsp";
 import generateCSP from "../utils/generateCsp";
 
 interface DocumentProps {
-    nonce: string;
+  nonce: string;
 }
-
 
 export default class MyDocument extends Document<DocumentProps> {
+  static async getInitialProps(ctx: DocumentContext) {
+    const nonce: string = generateNonce();
+    ctx.res?.setHeader("Content-Security-Policy", generateCSP({ nonce }));
+    const initialProps = await Document.getInitialProps(ctx);
+    const additionalProps = { nonce };
+    return {
+      ...initialProps,
+      ...additionalProps,
+    };
+  }
 
-    static async getInitialProps(ctx: DocumentContext) {
-
-        const nonce: string = generateNonce();
-        ctx.res?.setHeader('Content-Security-Policy', generateCSP({ nonce }));
-        const initialProps = await Document.getInitialProps(ctx);
-        const additionalProps = { nonce };
-        return {
-            ...initialProps,
-            ...additionalProps,
-        };
-
-    }
-
-    render(): JSX.Element {
-        const { nonce } = this.props
-        return (
-            <Html lang='en'>
-                <Head>
-                    <Script
-                        id={nonce}
-                        nonce={nonce}
-                        dangerouslySetInnerHTML={{
-                            __html: `window.__webpack_nonce__ = "${nonce}"`
-                        }}
-                    />
-
-                </Head>
-                <body>
-                    <Main />
-                    <NextScript />
-                </body>
-            </Html>
-        )
-    }
+  render(): JSX.Element {
+    const { nonce } = this.props;
+    return (
+      <Html lang="en">
+        <Head>
+          <Script
+            id={nonce}
+            nonce={nonce}
+            dangerouslySetInnerHTML={{
+              __html: `window.__webpack_nonce__ = "${nonce}"`,
+            }}
+          />
+        </Head>
+        <body>
+          <Main />
+          <NextScript />
+        </body>
+      </Html>
+    );
+  }
 }
-
