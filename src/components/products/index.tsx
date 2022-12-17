@@ -1,25 +1,16 @@
 import Image from "next/image";
 import { FC, useCallback, useState } from "react";
-import Stripe from "stripe";
-import { useAddCart } from "../hooks/addToCart";
-import { inferQueryOutput } from "../utils/trpc";
-import { Layover } from "./layover";
+import { useAddCart } from "../../hooks/addToCart";
+import { ProductData, RawProductData } from "../../models";
+import { inferQueryOutput } from "../../utils/trpc";
+import { Layover } from "../layover";
 
 interface ShopProps {
   products?: inferQueryOutput<"stripe.all-products">;
   params: string;
 }
-
-export interface RawProductData {
-  images: Array<string | undefined>;
-  default_price: string | Stripe.Price | null | undefined;
-  unit_amount: number | null | undefined;
-  name: string;
-  quantity: number;
-  description: string | null;
-}
-
 const Products: FC<ShopProps> = (props): JSX.Element => {
+
   const [overlay, openOverlay] = useState(false);
   const [productData, setProductData] = useState<RawProductData>({
     images: [""],
@@ -31,7 +22,6 @@ const Products: FC<ShopProps> = (props): JSX.Element => {
   });
 
   const handleClick = (data: RawProductData) => {
-    // react component functions use raw product data
     setProductData(data);
     productData !== undefined && openOverlay(true);
   };
@@ -83,21 +73,24 @@ const Products: FC<ShopProps> = (props): JSX.Element => {
     </>
   );
 };
-
 export default Products;
 
-export interface ProductData {
-  image: string;
-  name: string;
-  amount: number;
-  default_price: string;
-  quantity: number;
-}
 interface ProductOverlayProps {
   onCloseOverlay: () => void;
   data: RawProductData;
 }
 export const ProductOverlay: FC<ProductOverlayProps> = ({ onCloseOverlay, data }): JSX.Element => {
+
+  const classes = {
+    container: "flex flex-col",
+    header: "h-20 w-full bg-grey flex justify-end",
+    exitButton: "w-2/6 bg-grey flex justify-center items-center p-auto text-white",
+    addToCartWrapper: "lg:w-1/6 md:w-1/6 w-5/6",
+    productWrapper: "",
+    infoWrapper: "",
+    main: "",
+  }
+      
   const callBack = useCallback(() => {
     onCloseOverlay();
   }, [onCloseOverlay]);
@@ -105,22 +98,24 @@ export const ProductOverlay: FC<ProductOverlayProps> = ({ onCloseOverlay, data }
   return (
     <>
       <Layover>
-        <div className="flex flex-col">
-          <header className="h-20 w-full bg-grey flex justify-end">
-            <button className="w-2/6 bg-grey flex justify-center items-center p-auto text-white" onClick={() => callBack()}>
-              X
-            </button>
-          </header>
-          <main>
-            <section id="product-view" className="">
-              <Image alt={`kleanse product ${data.name}`} src={data.images[0] ?? ""} height={122.4} width={130} />
-            </section>
-            <section id="product-info" className="">
-              <span className="lg:w-1/6 md:w-1/6 w-5/6">
-                <AddToCartButton data={data} />
-              </span>
-            </section>
-          </main>
+        <div className={classes.main}>
+            <header className={classes.header}>
+              <button className={classes.exitButton} onClick={callBack}>X</button>
+            </header>
+            <main className={classes.main}>
+                <section id="product-view" className={classes.productWrapper}>
+                  <Image
+                    alt={`kleanse product ${data.name}`}
+                    src={data.images[0] ?? ""}
+                    height={122.4}
+                    width={130} />
+                </section>
+                <section id="product-info" className={classes.infoWrapper}>
+                  <span className={classes.addToCartWrapper}>
+                    <AddToCartButton data={data} />
+                  </span>
+                </section>
+            </main>
         </div>
       </Layover>
     </>
@@ -166,5 +161,4 @@ export const setLocalStorage = (data: Array<ProductData>) => {
   if (!data) return console.log(data);
   window.localStorage.clear();
   window.localStorage.setItem("cart", JSON.stringify(data));
-  console.log(window.localStorage.getItem("cart"));
 };

@@ -4,9 +4,9 @@ import { NextPage } from "next";
 import { useSession } from "next-auth/react";
 import { client } from "../_app";
 import Head from "next/head";
-import { ProductData } from "../../components/products";
 import Layout from "../../components/layout";
 import { inferQueryOutput } from "../../utils/trpc";
+import { ProductData } from "../../models";
 
 const Checkout: NextPage = (): JSX.Element => {
   const [items, setItems] = useState([]);

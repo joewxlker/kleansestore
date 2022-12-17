@@ -11,7 +11,7 @@ const Success: NextPage = props => {
   });
   return (
     <>
-      {/* <Head>
+      <Head>
                 <meta name="description" content="" />
             </Head>
             <Layout>
@@ -25,7 +25,7 @@ const Success: NextPage = props => {
                         <Link href='/stripe/checkout' ><button className="bg-grey px-3 py-2 text-white">Return to checkout</button></Link>
                     </div>
                 </div>
-            </Layout> */}
+            </Layout>
     </>
   );
 };

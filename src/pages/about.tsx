@@ -54,8 +54,7 @@ export const Module: FC<ModuleProps> = ({ title, images, textBody, align }): JSX
         <h1 className="text-4xl">{title}</h1>
         <h2 className="text-2xl">sub heading</h2>
         {textBody !== undefined && <p>{textBody[0]}</p>}
-        {/* @ts-ignore */}
-        {images !== undefined && <Image alt={``} src={images[0]} height={400} width={700} objectFit="cover" />}
+        {images !== undefined && <Image alt={``} src={images[0] ?? ''} height={400} width={700} />}
       </div>
     </div>
   );

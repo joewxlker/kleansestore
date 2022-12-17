@@ -4,8 +4,8 @@
   "description": "An e-commerce website built using nextjs, react, tRPC, typescsript, tailwind, stripe, mongodb and sendgrid",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "FEATURE_FLAG=false next dev",
+    "build": "FEATURE_FLAG=true next build",
     "start": "next start",
     "lint": "next lint"
   },

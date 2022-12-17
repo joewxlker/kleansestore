@@ -1,11 +1,11 @@
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { FC, useEffect } from "react";
-import { Form } from "../components/form";
-import Layout from "../components/layout";
-import { FormData } from "../hooks/SetForm";
-import { client } from "./_app";
+import { Form } from "../../components/form";
+import Layout from "../../components/layout";
+import { FormData } from "../../hooks/SetForm";
+import { client } from "../_app";
 
 const Signup: FC = ({ }): JSX.Element => {
   const handleRequest = async (data: {

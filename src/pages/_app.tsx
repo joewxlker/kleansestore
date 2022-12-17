@@ -4,15 +4,16 @@ import superjson from "superjson";
 import "../styles/globals.css";
 import { SessionProvider } from "next-auth/react";
 import { createTRPCClient } from "@trpc/client";
-import { createContext, useState } from "react";
-import { AppType } from "next/dist/shared/lib/utils";
+import { createContext, Dispatch, SetStateAction, useState } from "react";
 import { withTRPC } from "@trpc/next";
+import { AppType } from "next/app";
+import { AppProps } from 'next/app'
+import { ProductData } from "../models";
 
-export const CartContext = createContext<Array<any>>([]);
+export const CartContext = createContext<[ProductData[], Dispatch<SetStateAction<ProductData[]>>] | [null, null]>([null, null]);
 
-const MyApp: any = ({ Component, pageProps: { session, ...pageProps } }: { Component: any; pageProps: { session: any } }) => {
-  const [items, setItems] = useState<Array<any>>([]);
-
+const MyApp: AppType = ({ Component, pageProps: { session, ...pageProps } }: AppProps ) => {
+  const [items, setItems] = useState<ProductData[]>([]);
   return (
     <CartContext.Provider value={[items, setItems]}>
       <SessionProvider session={session}>
@@ -20,7 +21,6 @@ const MyApp: any = ({ Component, pageProps: { session, ...pageProps } }: { Compo
       </SessionProvider>
     </CartContext.Provider>
   );
-  // using next-auth session
 };
 
 const getBaseUrl = () => {
@@ -36,7 +36,7 @@ const getBaseUrl = () => {
 };
 
 export default withTRPC<AppRouter>({
-  config({ ctx }) {
+  config() {
     const url = `${getBaseUrl()}/api/trpc`;
     return {
       url,

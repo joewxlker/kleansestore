@@ -1,7 +1,7 @@
 // utils/generate-csp.ts
 type Value = string;
 interface Options {
-  devOnly?: boolean;
+  devOnly: boolean;
 }
 const policy: Partial<Record<Directive, Value[]>> = {};
 
@@ -13,28 +13,29 @@ interface generateCSPProps {
 // adder function for our policy object
 
 const generateCSP = ({ nonce }: generateCSPProps = {}) => {
-  /* ... */
-  const add = (directive: Directive, value: Value, options: Options = {}) => {
-    if (options.devOnly && process.env.NODE_ENV !== "development") return;
-    const curr = policy[directive];
-    policy[directive] = curr ? [...curr, value] : [value];
+
+  const add = (directive: Directive, value: Value, options?: Options) => {
+    if (process.env.NODE_ENV === 'production' && !options?.devOnly) {
+      const curr = policy[directive];
+      policy[directive] = curr ? [...curr, value] : [value];
+    } else if (process.env.NODE_ENV === 'development') {
+      const curr = policy[directive];
+      policy[directive] = curr ? [...curr, value] : [value];
+    }
   };
 
-  //script-src
-  // add('script-src', `'nonce-${nonce}'`);
-  add("script-src", `'self'`);
-  add("script-src", `'unsafe-eval'`);
-
-  // script-src-elem
-
-  add("base-uri", `'self'`);
-  // style-src
-  add("style-src", `'unsafe-inline'`);
-  add("style-src", `'self'`);
-
-  add("manifest-src", `'none'`);
-
-  add("object-src", `'none'`);
+    add("script-src", `'self'`);
+    add("script-src", `'unsafe-eval'`, { devOnly: true });
+    add("script-src", `'nonce-${nonce}'`)
+  
+    add("base-uri", `'self'`);
+  
+    add("style-src", `'unsafe-inline'`);
+    add("style-src", `'self'`);
+  
+    add("manifest-src", `'none'`);
+  
+    add("object-src", `'none'`);
 
   return Object.entries(policy)
     .map(([key, value]) => `${key} ${value.join(" ")}`)

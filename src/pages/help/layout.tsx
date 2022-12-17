@@ -3,13 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
-import { client } from "../_app";
 
 interface HelpLayoutProps {
   children: JSX.Element;
 }
-interface HeaderProps {}
-interface FooterProps {}
 
 const HelpLayout: FC<HelpLayoutProps> = ({ children }): JSX.Element => {
   const [history, setHistory] = useState<Array<string> | undefined>();
@@ -17,7 +14,7 @@ const HelpLayout: FC<HelpLayoutProps> = ({ children }): JSX.Element => {
 
   useEffect(() => {
     setHistory(router.pathname.split("/"));
-  }, []);
+  }, [router.pathname]);
 
   return (
     <>
@@ -69,7 +66,7 @@ const HelpLayout: FC<HelpLayoutProps> = ({ children }): JSX.Element => {
 
 export default HelpLayout;
 
-export const Header: FC<HeaderProps> = (): JSX.Element => {
+export const Header: FC = (): JSX.Element => {
   // toggles setBoolean in layout component
 
   return (
@@ -90,7 +87,7 @@ export const Header: FC<HeaderProps> = (): JSX.Element => {
   );
 };
 
-export const Footer: FC<FooterProps> = (): JSX.Element => {
+export const Footer: FC = (): JSX.Element => {
   return (
     <div className="flex bg-grey p-5 text-white flex-row justify-center items-center" style={{ color: "rgb(150,150,150)" }}>
       <p>Terms of use</p>

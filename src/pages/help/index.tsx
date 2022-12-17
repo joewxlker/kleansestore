@@ -15,7 +15,7 @@ const Contact: FC = ({}): JSX.Element => {
       <Layout>
         <div id="hardfadein" className="flex flex-col justify-center items-center">
           <div className="h-80 w-full mb-20">
-            <Image src="/images/models/womenputtingcream.jpg" alt="womens skincare product" height={400} width={2000} objectFit="cover" />
+            <Image src="/images/models/womenputtingcream.jpg" alt="womens skincare product" height={400} width={2000}/>
           </div>
           <h1 className="text-3xl">CONTACT US</h1>
           <h2 className="text-md">WE ARE HERE TO HELP</h2>
@@ -95,15 +95,15 @@ export const ContactFormComponent: FC = (): JSX.Element => {
       {/* contact form, doesnt require date of birth elements, pass empty array */}
       {/* onResponse returns boolean from api */}
       <div className="h-1/2 w-full flex flex-row justify-evenly items-center">
-        <span className="flex flex-col justify-center items-center cursor-pointer" onClick={e => {}}>
+        <span className="flex flex-col justify-center items-center cursor-pointer" onClick={() => ''}>
           <Image alt="" src="/images/ui-elements/phone-office-thin.svg" width={20} height={20} />
           <h3>Mobile</h3>
         </span>
-        <span className="flex flex-col justify-center items-center cursor-pointer" onClick={e => {}}>
+        <span className="flex flex-col justify-center items-center cursor-pointer" onClick={() => ''}>
           <Image alt="" src="/images/ui-elements/envelope-circle-check-light.svg" width={20} height={20} />
           <h3>email</h3>
         </span>
-        <span className="flex flex-col justify-center items-center cursor-pointer" onClick={e => {}}>
+        <span className="flex flex-col justify-center items-center cursor-pointer" onClick={() => ''}>
           <Image alt="" src="/images/ui-elements/mailbox-thin.svg" width={20} height={20} />
           <h3>post</h3>
         </span>

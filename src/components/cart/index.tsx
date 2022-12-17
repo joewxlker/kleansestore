@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FC, useCallback, useContext, useEffect } from "react";
-import { useAddCart } from "../hooks/addToCart";
-import { CartContext } from "../pages/_app";
-import { ProductData, setLocalStorage } from "./products";
+import { useAddCart } from "../../hooks/addToCart";
+import { ProductData } from "../../models";
+import { CartContext } from "../../pages/_app";
+import {  setLocalStorage } from "../products";
 
 export const Cart: FC = (): JSX.Element => {
   const [items] = useContext(CartContext);

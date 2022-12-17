@@ -5,8 +5,9 @@ import Layout from "../components/layout";
 import { useIncrementData } from "../hooks/useIntervals";
 import { cards, images } from "../utils/siteInfo";
 import { inferQueryOutput } from "../utils/trpc";
-import Products, { ProductData } from "../components/products";
+import Products from "../components/products";
 import Head from "next/head";
+import { ProductData } from "../models";
 
 interface HomeProps {
   onCartUpdates: (items: ProductData) => void;

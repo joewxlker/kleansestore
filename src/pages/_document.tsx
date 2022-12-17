@@ -1,4 +1,4 @@
-import { DocumentContext, loadGetInitialProps, NextPageContext } from "next/dist/shared/lib/utils";
+import { DocumentContext } from "next/dist/shared/lib/utils";
 import Document, { Html, Main, NextScript, Head } from "next/document";
 import Script from "next/script";
 import { generateNonce } from "../utils/generateCsp";

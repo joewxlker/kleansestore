@@ -1,6 +1,6 @@
 import { FC, FormEvent, useCallback, useEffect, useState } from "react";
-import useSetForm, { FormData } from "../hooks/SetForm";
-import { dateData } from "../utils/siteInfo";
+import useSetForm, { FormData } from "../../hooks/SetForm";
+import { dateData } from "../../utils/siteInfo";
 
 interface FormProps {
   formData: FormData;

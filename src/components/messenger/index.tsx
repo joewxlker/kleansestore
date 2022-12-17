@@ -18,8 +18,7 @@ export const Messenger: FC = ({ }): JSX.Element => {
         setFormData("");
     };
 
-    const DEVELOPMENT = false;
-    if (!DEVELOPMENT) return <></>;
+    if (process.env.FEATURE_FLAG) return <></>;
 
     return (
         <div className={`fixed bottom-0 right-40 w-[25rem] ${popup ? "h-[50vh]" : "h-12"}  bg-white z-50 shadow-2xl`}>
